@@ -20,8 +20,8 @@ contract TestToken {
     /*
      *  Storage
      */
-    mapping(address => uint256) balances;
-    mapping(address => mapping(address => uint256)) allowed;
+    mapping(address => uint256) private balances;
+    mapping(address => mapping(address => uint256)) private allowed;
     uint256 public totalSupply;
 
     /*
