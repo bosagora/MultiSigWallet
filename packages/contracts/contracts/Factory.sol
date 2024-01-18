@@ -1,7 +1,8 @@
-pragma solidity ^0.4.15;
+// SPDX-License-Identifier: LGPL-3.0
+
+pragma solidity ^0.8.2;
 
 contract Factory {
-
     /*
      *  Events
      */
@@ -17,26 +18,20 @@ contract Factory {
      * Public functions
      */
     /// @dev Returns number of instantiations by creator.
-    /// @param creator Contract creator.
-    /// @return Returns number of instantiations by creator.
-    function getInstantiationCount(address creator)
-        public
-        constant
-        returns (uint)
-    {
-        return instantiations[creator].length;
+    /// @param _creator Contract creator.
+    /// @return number of instantiations by creator.
+    function getInstantiationCount(address _creator) public view returns (uint256) {
+        return instantiations[_creator].length;
     }
 
     /*
      * Internal functions
      */
     /// @dev Registers contract in factory registry.
-    /// @param instantiation Address of contract instantiation.
-    function register(address instantiation)
-        internal
-    {
-        isInstantiation[instantiation] = true;
-        instantiations[msg.sender].push(instantiation);
-        ContractInstantiation(msg.sender, instantiation);
+    /// @param _instantiation Address of contract instantiation.
+    function register(address _instantiation) internal {
+        isInstantiation[_instantiation] = true;
+        instantiations[msg.sender].push(_instantiation);
+        emit ContractInstantiation(msg.sender, _instantiation);
     }
 }
