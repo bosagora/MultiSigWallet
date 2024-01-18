@@ -1,80 +1,36 @@
-# Basics
-*.py[cod]
-*.pyc
-__pycache__
+# dependencies
+node_modules
 
-# Logs
-*.log
-pip-log.txt
+# testing
+coverage
 
-# Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
+# production
+build
+dist
+dist-ssr
+*.local
+.cache
+storybook-static
+typechain
 
-# Translations
-*.mo
-*.pot
-
-# Pycharm
-.idea
-
-# Vagrant
-.vagrant
-
-# Vim
-
-*~
-*.swp
-*.swo
-
-# npm
-node_modules/
-# package-lock.json
-# dapp/package-lock.json
-
-# Compass
-.sass-cache
-
-# sqlite
-*.sqlite
-
-CACHE
-
-# OS generated files #
-######################
+# misc
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+*.pem
+*.tgz
 
-# pip
-/src
+# debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Collected static files via Django's staticfiles app
-/staticfiles
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.bosagora
+.env.athens
+.env.localhost
 
-# custom multisig folders
-/contracts/abi
-/dapp/partials.js
-multisigWallet.zip
-/dapp/dist
-
-# Truffle
-/build
-
-# Bower
-dapp/bower_components
-
-# Keys
-dapp/localhost.crt
-dapp/localhost.key
-
-# Travis
-.travis/deploy_key
-
-# built package.json
-dapp/src/package.json
+.idea
