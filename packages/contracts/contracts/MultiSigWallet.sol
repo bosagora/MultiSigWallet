@@ -2,9 +2,12 @@
 
 pragma solidity ^0.8.2;
 
+import "./IMultiSigWallet.sol";
+import "./IMultiSigWalletFactory.sol";
+
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
-contract MultiSigWallet {
+contract MultiSigWallet is IMultiSigWallet {
     /*
      *  Events
      */
@@ -32,6 +35,7 @@ contract MultiSigWallet {
     address[] public owners;
     uint256 public required;
     uint256 public transactionCount;
+    address public factoryAddress;
 
     struct Transaction {
         address destination;
@@ -92,12 +96,15 @@ contract MultiSigWallet {
      * Public functions
      */
     /// @dev Contract constructor sets initial owners and required number of confirmations.
+    /// @param _factory MultiSigWalletFactory.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
-    constructor(address[] memory _owners, uint256 _required) {
+    constructor(address _factory, address[] memory _owners, uint256 _required) {
         require(
             _owners.length <= MAX_OWNER_COUNT && _required <= _owners.length && _required != 0 && _owners.length != 0
         );
+
+        factoryAddress = _factory;
 
         for (uint256 i = 0; i < _owners.length; i++) {
             require(!isOwner[_owners[i]] && _owners[i] != address(0));
@@ -118,6 +125,7 @@ contract MultiSigWallet {
     ) public onlyWallet ownerDoesNotExist(_owner) notNull(_owner) validRequirement(owners.length + 1, required) {
         isOwner[_owner] = true;
         owners.push(_owner);
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_owner, address(this));
         emit OwnerAddition(_owner);
     }
 
@@ -131,6 +139,7 @@ contract MultiSigWallet {
                 break;
             }
         owners.pop();
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeOwner(_owner, address(this));
         if (required > owners.length) changeRequirement(owners.length);
         emit OwnerRemoval(_owner);
     }
@@ -149,6 +158,8 @@ contract MultiSigWallet {
             }
         isOwner[_owner] = false;
         isOwner[_newOwner] = true;
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeOwner(_owner, address(this));
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_newOwner, address(this));
         emit OwnerRemoval(_owner);
         emit OwnerAddition(_newOwner);
     }
@@ -164,37 +175,47 @@ contract MultiSigWallet {
     /// @param _destination Transaction target address.
     /// @param _value Transaction ether value.
     /// @param _data Transaction data payload.
-    /// @return transaction ID.
-    function submitTransaction(address _destination, uint256 _value, bytes calldata _data) public returns (uint256) {
+    function submitTransaction(address _destination, uint256 _value, bytes calldata _data) external override {
         uint256 transactionId = addTransaction(_destination, _value, _data);
-        confirmTransaction(transactionId);
-        return transactionId;
+        _confirmTransaction(transactionId);
     }
 
     /// @dev Allows an owner to confirm a transaction.
     /// @param _transactionId Transaction ID.
-    function confirmTransaction(
+    function confirmTransaction(uint256 _transactionId) external override {
+        _confirmTransaction(_transactionId);
+    }
+
+    /// @dev Allows an owner to confirm a transaction.
+    /// @param _transactionId Transaction ID.
+    function _confirmTransaction(
         uint256 _transactionId
-    ) public ownerExists(msg.sender) transactionExists(_transactionId) notConfirmed(_transactionId, msg.sender) {
+    ) internal ownerExists(msg.sender) transactionExists(_transactionId) notConfirmed(_transactionId, msg.sender) {
         confirmations[_transactionId][msg.sender] = true;
         emit Confirmation(msg.sender, _transactionId);
-        executeTransaction(_transactionId);
+        _executeTransaction(_transactionId);
     }
 
     /// @dev Allows an owner to revoke a confirmation for a transaction.
     /// @param _transactionId Transaction ID.
     function revokeConfirmation(
         uint256 _transactionId
-    ) public ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
+    ) external override ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
         confirmations[_transactionId][msg.sender] = false;
         emit Revocation(msg.sender, _transactionId);
     }
 
     /// @dev Allows anyone to execute a confirmed transaction.
     /// @param _transactionId Transaction ID.
-    function executeTransaction(
+    function executeTransaction(uint256 _transactionId) external override {
+        _executeTransaction(_transactionId);
+    }
+
+    /// @dev Allows anyone to execute a confirmed transaction.
+    /// @param _transactionId Transaction ID.
+    function _executeTransaction(
         uint256 _transactionId
-    ) public virtual ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
+    ) internal ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
         if (isConfirmed(_transactionId)) {
             Transaction storage txn = transactions[_transactionId];
             txn.executed = true;
@@ -277,7 +298,7 @@ contract MultiSigWallet {
     /// @dev Returns number of confirmations of a transaction.
     /// @param _transactionId Transaction ID.
     /// @return number of confirmations.
-    function getConfirmationCount(uint256 _transactionId) public view returns (uint256) {
+    function getConfirmationCount(uint256 _transactionId) external view override returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < owners.length; i++) if (confirmations[_transactionId][owners[i]]) count += 1;
         return count;
@@ -287,7 +308,7 @@ contract MultiSigWallet {
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return number of transactions after filters are applied.
-    function getTransactionCount(bool _pending, bool _executed) public view returns (uint256) {
+    function getTransactionCount(bool _pending, bool _executed) external view override returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < transactionCount; i++)
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) count += 1;
@@ -296,14 +317,14 @@ contract MultiSigWallet {
 
     /// @dev Returns list of owners.
     /// @return array of owner addresses.
-    function getOwners() public view returns (address[] memory) {
+    function getOwners() external view override returns (address[] memory) {
         return owners;
     }
 
     /// @dev Returns array with owner addresses, which confirmed transaction.
     /// @param _transactionId Transaction ID.
     /// @return array of owner addresses.
-    function getConfirmations(uint256 _transactionId) public view returns (address[] memory) {
+    function getConfirmations(uint256 _transactionId) external view override returns (address[] memory) {
         address[] memory confirmationsTemp = new address[](owners.length);
         uint256 count = 0;
         uint256 i;
@@ -328,7 +349,7 @@ contract MultiSigWallet {
         uint256 _to,
         bool _pending,
         bool _executed
-    ) public view returns (uint256[] memory) {
+    ) external view override returns (uint256[] memory) {
         uint256[] memory transactionIdsTemp = new uint256[](transactionCount);
         uint256 count = 0;
         uint256 i;
