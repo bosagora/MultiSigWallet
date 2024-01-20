@@ -2,12 +2,14 @@
 
 pragma solidity ^0.8.2;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "./IMultiSigWallet.sol";
 import "./IMultiSigWalletFactory.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
-contract MultiSigWallet is IMultiSigWallet {
+contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Events
      */
@@ -112,6 +114,13 @@ contract MultiSigWallet is IMultiSigWallet {
         }
         owners = _owners;
         required = _required;
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IMultiSigWallet).interfaceId || super.supportsInterface(interfaceId);
     }
 
     receive() external payable {

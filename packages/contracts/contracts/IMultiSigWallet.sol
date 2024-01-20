@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-interface IMultiSigWallet {
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
+interface IMultiSigWallet is IERC165 {
     function submitTransaction(address _destination, uint256 _value, bytes calldata _data) external;
     function confirmTransaction(uint256 _transactionId) external;
     function revokeConfirmation(uint256 _transactionId) external;
