@@ -10,9 +10,11 @@ import { MultiSigWallet } from "../typechain-types";
 import assert from "assert";
 import { BigNumber, Wallet } from "ethers";
 
+import { AddressZero } from "@ethersproject/constants";
+
 async function deployMultiSigWallet(deployer: Wallet, owners: string[], required: number): Promise<MultiSigWallet> {
     const factory = await ethers.getContractFactory("MultiSigWallet");
-    const contract = (await factory.connect(deployer).deploy(owners, required)) as MultiSigWallet;
+    const contract = (await factory.connect(deployer).deploy(AddressZero, owners, required)) as MultiSigWallet;
     await contract.deployed();
     await contract.deployTransaction.wait();
     return contract;
