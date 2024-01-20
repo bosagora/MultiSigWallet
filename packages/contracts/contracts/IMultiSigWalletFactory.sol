@@ -2,7 +2,9 @@
 
 pragma solidity ^0.8.2;
 
-interface IMultiSigWalletFactory {
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
+interface IMultiSigWalletFactory is IERC165 {
     function create(address[] memory _owners, uint256 _required) external returns (address);
     function getNumberOfWalletsForCreator(address _creator) external view returns (uint256);
     function getWalletsForCreator(

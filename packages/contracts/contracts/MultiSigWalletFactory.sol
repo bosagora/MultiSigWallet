@@ -2,12 +2,14 @@
 
 pragma solidity ^0.8.2;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
 import "./MultiSigWallet.sol";
 import "./IMultiSigWalletFactory.sol";
 
 /// @title Multi-Signature wallet factory - Allows creation of multisig wallet.
 /// @author Stefan George - <stefan.george@consensys.net>
-contract MultiSigWalletFactory is IMultiSigWalletFactory {
+contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     /*
      *  Events
      */
@@ -33,6 +35,13 @@ contract MultiSigWalletFactory is IMultiSigWalletFactory {
         }
         register(wallet);
         return wallet;
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IMultiSigWalletFactory).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @dev Returns number of instantiations by creator.
