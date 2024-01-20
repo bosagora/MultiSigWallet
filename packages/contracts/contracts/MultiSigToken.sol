@@ -26,8 +26,4 @@ contract MultiSigToken is ERC20 {
     function mint(address _account, uint256 _amount) external onlyOwner {
         _mint(_account, _amount);
     }
-
-    function decimals() public view virtual override returns (uint8) {
-        return 18;
-    }
 }
