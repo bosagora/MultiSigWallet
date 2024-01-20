@@ -1,0 +1,11 @@
+{
+  "bosagora_mainnet": {
+    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+  },
+  "bosagora_testnet": {
+    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+  },
+  "bosagora_devnet": {
+    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+  }
+}
