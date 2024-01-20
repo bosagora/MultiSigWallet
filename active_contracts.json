@@ -1,11 +1,11 @@
 {
   "bosagora_mainnet": {
-    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+    "MultiSigWalletFactory": "0x173A004aCf3aF9ccc0785346F17733eA33f65BB9"
   },
   "bosagora_testnet": {
-    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+    "MultiSigWalletFactory": "0x173A004aCf3aF9ccc0785346F17733eA33f65BB9"
   },
   "bosagora_devnet": {
-    "MultiSigWalletFactory": "0x0000000000000000000000000000000000000000"
+    "MultiSigWalletFactory": "0x173A004aCf3aF9ccc0785346F17733eA33f65BB9"
   }
 }

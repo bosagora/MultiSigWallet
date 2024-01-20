@@ -10,6 +10,7 @@
         "clean": "hardhat clean",
         "build": "hardhat compile",
         "build:npm": "rollup --config rollup.config.ts",
+        "deploy:devnet": "hardhat run deploy/bosagora_devnet/deploy.ts --network bosagora_devnet",
         "lint": "tslint --config tslint.json \\\"{src,test}/**/*.ts\\\"",
         "lint-fix": "tslint --fix --config tslint.json \\\"{src,test}/**/*.ts\\\"",
         "formatting:check": "prettier '**/*.{json,sol,ts,js,md}' -c",
