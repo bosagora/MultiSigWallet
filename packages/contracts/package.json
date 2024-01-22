@@ -1,6 +1,6 @@
 {
     "name": "multisig-wallet-contracts",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Smart Contracts of MultiSignature Wallet",
     "files": [
         "**/*.sol"
