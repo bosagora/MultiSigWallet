@@ -63,9 +63,10 @@ describe("MultiSigWallet", () => {
         const includePending = true;
         const excludeExecuted = false;
         const includeExecuted = true;
-        assert.deepStrictEqual(await multisigInstance.getTransactionIds(0, 1, includePending, excludeExecuted), [
-            BigNumber.from(transactionId),
-        ]);
+        assert.deepStrictEqual(
+            await multisigInstance.getTransactionIdsInCondition(0, 1, includePending, excludeExecuted),
+            [BigNumber.from(transactionId)]
+        );
 
         // Update required to 1
         const newRequired = 1;
@@ -82,22 +83,23 @@ describe("MultiSigWallet", () => {
         );
         assert.ok(transactionId2 !== undefined);
 
-        assert.deepStrictEqual(await multisigInstance.getTransactionIds(0, 2, includePending, excludeExecuted), [
-            BigNumber.from(transactionId),
-            BigNumber.from(transactionId2),
-        ]);
+        assert.deepStrictEqual(
+            await multisigInstance.getTransactionIdsInCondition(0, 2, includePending, excludeExecuted),
+            [BigNumber.from(transactionId), BigNumber.from(transactionId2)]
+        );
 
         // Confirm change requirement transaction
         await multisigInstance.connect(owners[1]).confirmTransaction(transactionId2);
-        assert.equal((await multisigInstance.required()).toNumber(), newRequired);
-        assert.deepStrictEqual(await multisigInstance.getTransactionIds(0, 1, excludePending, includeExecuted), [
-            BigNumber.from(transactionId2),
-        ]);
+        assert.equal((await multisigInstance.getRequired()).toNumber(), newRequired);
+        assert.deepStrictEqual(
+            await multisigInstance.getTransactionIdsInCondition(0, 1, excludePending, includeExecuted),
+            [BigNumber.from(transactionId2)]
+        );
 
         await multisigInstance.connect(owners[0]).executeTransaction(transactionId);
-        assert.deepStrictEqual(await multisigInstance.getTransactionIds(0, 2, excludePending, includeExecuted), [
-            BigNumber.from(transactionId2),
-            BigNumber.from(transactionId),
-        ]);
+        assert.deepStrictEqual(
+            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted),
+            [BigNumber.from(transactionId2), BigNumber.from(transactionId)]
+        );
     });
 });

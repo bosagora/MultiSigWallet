@@ -31,20 +31,13 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Storage
      */
-    mapping(uint256 => Transaction) public transactions;
-    mapping(uint256 => mapping(address => bool)) public confirmations;
-    mapping(address => bool) public isOwner;
-    address[] public owners;
-    uint256 public required;
-    uint256 public transactionCount;
-    address public factoryAddress;
-
-    struct Transaction {
-        address destination;
-        uint256 value;
-        bytes data;
-        bool executed;
-    }
+    mapping(uint256 => Transaction) internal transactions;
+    mapping(uint256 => mapping(address => bool)) internal confirmations;
+    mapping(address => bool) internal ownerMap;
+    address[] internal owners;
+    uint256 internal required;
+    uint256 internal transactionCount;
+    address internal factoryAddress;
 
     /*
      *  Modifiers
@@ -55,12 +48,12 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     }
 
     modifier ownerDoesNotExist(address _owner) {
-        require(!isOwner[_owner]);
+        require(!ownerMap[_owner]);
         _;
     }
 
     modifier ownerExists(address _owner) {
-        require(isOwner[_owner]);
+        require(ownerMap[_owner]);
         _;
     }
 
@@ -109,8 +102,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         factoryAddress = _factory;
 
         for (uint256 i = 0; i < _owners.length; i++) {
-            require(!isOwner[_owners[i]] && _owners[i] != address(0));
-            isOwner[_owners[i]] = true;
+            require(!ownerMap[_owners[i]] && _owners[i] != address(0));
+            ownerMap[_owners[i]] = true;
         }
         owners = _owners;
         required = _required;
@@ -132,7 +125,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     function addOwner(
         address _owner
     ) public onlyWallet ownerDoesNotExist(_owner) notNull(_owner) validRequirement(owners.length + 1, required) {
-        isOwner[_owner] = true;
+        ownerMap[_owner] = true;
         owners.push(_owner);
         if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_owner, address(this));
         emit OwnerAddition(_owner);
@@ -141,7 +134,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @dev Allows to remove an owner. Transaction has to be sent by wallet.
     /// @param _owner Address of owner.
     function removeOwner(address _owner) public onlyWallet ownerExists(_owner) {
-        isOwner[_owner] = false;
+        ownerMap[_owner] = false;
         for (uint256 i = 0; i < owners.length - 1; i++)
             if (owners[i] == _owner) {
                 owners[i] = owners[owners.length - 1];
@@ -165,8 +158,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
                 owners[i] = _newOwner;
                 break;
             }
-        isOwner[_owner] = false;
-        isOwner[_newOwner] = true;
+        ownerMap[_owner] = false;
+        ownerMap[_newOwner] = true;
         if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeOwner(_owner, address(this));
         if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_newOwner, address(this));
         emit OwnerRemoval(_owner);
@@ -317,7 +310,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return number of transactions after filters are applied.
-    function getTransactionCount(bool _pending, bool _executed) external view override returns (uint256) {
+    function getTransactionCountInCondition(bool _pending, bool _executed) external view override returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < transactionCount; i++)
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) count += 1;
@@ -353,7 +346,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return array of transaction IDs.
-    function getTransactionIds(
+    function getTransactionIdsInCondition(
         uint256 _from,
         uint256 _to,
         bool _pending,
@@ -370,5 +363,36 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256[] memory values = new uint256[](_to - _from);
         for (i = _from; i < _to; i++) values[i - _from] = transactionIdsTemp[i];
         return values;
+    }
+
+    /// @dev Returns number of transactions
+    function getTransactionCount() external view override returns (uint256) {
+        return transactionCount;
+    }
+
+    /// @dev Returns transaction
+    /// @param _transactionId Transaction ID.
+    function getTransaction(uint256 _transactionId) external view override returns (Transaction memory) {
+        return transactions[_transactionId];
+    }
+
+    /// @dev Returns list of transaction in defined range.
+    /// @param _from Index start position of transaction array.
+    /// @param _to Index end position of transaction array.
+    /// @return array of transactions.
+    function getTransactionsInRange(uint256 _from, uint256 _to) external view override returns (Transaction[] memory) {
+        Transaction[] memory values = new Transaction[](_to - _from);
+        for (uint256 i = _from; i < _to; i++) values[i - _from] = transactions[i];
+        return values;
+    }
+
+    /// @dev Returns required
+    function getRequired() external view override returns (uint256) {
+        return required;
+    }
+
+    /// @dev Returns is owner
+    function isOwner(address _address) external view override returns (bool) {
+        return ownerMap[_address];
     }
 }
