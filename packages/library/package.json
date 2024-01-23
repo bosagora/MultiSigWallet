@@ -1,6 +1,6 @@
 {
     "name": "multisig-wallet-contracts-lib",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "",
     "main": "dist/bundle-cjs.js",
     "module": "dist/bundle-esm.js",
@@ -15,14 +15,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/bosagora/MultiSigWallet.git"
+        "url": "git+https://github.com/bosagora/multisig-wallet.git"
     },
     "author": "BOSagora Foundation",
     "license": "LGPL-3.0",
     "bugs": {
-        "url": "https://github.com/bosagora/MultiSigWallet/issues"
+        "url": "https://github.com/bosagora/multisig-wallet/issues"
     },
-    "homepage": "https://github.com/bosagora/MultiSigWallet#readme",
+    "homepage": "https://github.com/bosagora/multisig-wallet#readme",
     "devDependencies": {
         "@rollup/plugin-json": "^4.1.0",
         "@rollup/plugin-typescript": "^8.3.1",
