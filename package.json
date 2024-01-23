@@ -2,7 +2,7 @@
   "name": "multisig-wallet",
   "version": "1.0.0",
   "description": "MultiSignature Wallet",
-  "repository": "https://github.com/bosagora/MultiSigWallet",
+  "repository": "https://github.com/bosagora/multisig-wallet",
   "author": "BOSagora Foundation",
   "license": "LGPL-3.0",
   "private": true,
