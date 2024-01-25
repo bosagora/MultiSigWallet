@@ -68,6 +68,29 @@ describe("Test for Validator", () => {
         assert.deepStrictEqual(balance.valueOf(), deposit);
     });
 
+    it("transferBOA", async () => {
+        const account = Wallet.createRandom();
+        const amount = BOACoin.make("1").value;
+        assert.deepStrictEqual(await provider.getBalance(account.address), BigNumber.from(0));
+        const transactionId = await ContractUtils.getEventValueBigNumber(
+            await multisigInstance.connect(owners[0]).submitTransaction(account.address, amount, "0x"),
+            multisigInstance.interface,
+            "Submission",
+            "transactionId"
+        );
+        assert.ok(transactionId !== undefined);
+
+        const executedTransactionId = await ContractUtils.getEventValueBigNumber(
+            await multisigInstance.connect(owners[1]).confirmTransaction(transactionId),
+            multisigInstance.interface,
+            "Execution",
+            "transactionId"
+        );
+
+        assert.deepStrictEqual(transactionId, executedTransactionId);
+        assert.deepStrictEqual(await provider.getBalance(account.address), amount);
+    });
+
     it("transferWithPayloadSizeCheck", async () => {
         const amount = BOACoin.make("100").value;
 
