@@ -260,7 +260,14 @@ describe("Test for MultiSigWalletFactory", () => {
     it("changeName", async () => {
         assert.ok(multiSigWallet1);
 
-        await multiSigFactory.connect(deployer).changeName(multiSigWallet1.address, walletInfos[3].name);
+        const newValue = await ContractUtils.getEventValueString(
+            await multiSigFactory.connect(deployer).changeName(multiSigWallet1.address, walletInfos[3].name),
+            multiSigFactory.interface,
+            "ChangedName",
+            "name"
+        );
+        assert.deepStrictEqual(newValue, walletInfos[3].name);
+
         const res = await multiSigFactory.getWalletInfo(multiSigWallet1.address);
         assert.deepStrictEqual(res.wallet, multiSigWallet1.address);
         assert.deepStrictEqual(res.name, walletInfos[3].name);
@@ -270,7 +277,16 @@ describe("Test for MultiSigWalletFactory", () => {
     it("changeDescription", async () => {
         assert.ok(multiSigWallet1);
 
-        await multiSigFactory.connect(deployer).changeDescription(multiSigWallet1.address, walletInfos[3].description);
+        const newValue = await ContractUtils.getEventValueString(
+            await multiSigFactory
+                .connect(deployer)
+                .changeDescription(multiSigWallet1.address, walletInfos[3].description),
+            multiSigFactory.interface,
+            "ChangedDescription",
+            "description"
+        );
+        assert.deepStrictEqual(newValue, walletInfos[3].description);
+
         const res = await multiSigFactory.getWalletInfo(multiSigWallet1.address);
         assert.deepStrictEqual(res.wallet, multiSigWallet1.address);
         assert.deepStrictEqual(res.name, walletInfos[3].name);
