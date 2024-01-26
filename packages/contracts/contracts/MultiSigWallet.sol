@@ -233,7 +233,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     // call has been separated into its own function in order to take advantage
     // of the Solidity's code generator to produce a loop that copies tx.data into memory.
     function external_call(address _destination, uint256 _value, bytes memory _data) internal returns (bool) {
-        (bool success, bytes memory data) = _destination.call{ value: _value }(_data);
+        (bool success, ) = _destination.call{ value: _value }(_data);
         return success;
     }
 

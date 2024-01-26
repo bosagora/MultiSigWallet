@@ -20,20 +20,36 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      */
     mapping(address => bool) internal hasWallets;
     mapping(address => address[]) internal wallets;
+    mapping(address => WalletInfo) internal walletInfos;
 
     /*
      * Public functions
      */
     /// @dev Allows verified creation of multi-signature wallet.
+    /// @param _name List of initial owners.
+    /// @param _description List of initial owners.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
     /// @return wallet address.
-    function create(address[] memory _owners, uint256 _required) external override returns (address) {
+    function create(
+        string calldata _name,
+        string calldata _description,
+        address[] memory _owners,
+        uint256 _required
+    ) external override returns (address) {
         address wallet = address(new MultiSigWallet(address(this), _owners, _required));
         for (uint256 idx = 0; idx < _owners.length; idx++) {
             _addOwner(_owners[idx], wallet);
         }
         register(wallet);
+        WalletInfo memory walletInfo = WalletInfo({
+            creator: msg.sender,
+            wallet: wallet,
+            name: _name,
+            description: _description,
+            time: block.timestamp
+        });
+        walletInfos[wallet] = walletInfo;
         return wallet;
     }
 
@@ -59,12 +75,32 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         address _creator,
         uint256 _from,
         uint256 _to
-    ) external view override returns (address[] memory) {
-        address[] memory values = new address[](_to - _from);
+    ) external view override returns (WalletInfo[] memory) {
+        WalletInfo[] memory values = new WalletInfo[](_to - _from);
         for (uint256 i = _from; i < _to; i++) {
-            values[i - _from] = wallets[_creator][i];
+            address wallet = wallets[_creator][i];
+            values[i - _from] = walletInfos[wallet];
         }
         return values;
+    }
+
+    /// @dev Returns information of the wallet
+    /// @param _wallet Address of wallet
+    /// @return information of wallet
+    function getWalletInfo(address _wallet) external view override returns (WalletInfo memory) {
+        return walletInfos[_wallet];
+    }
+
+    function changeName(address _wallet, string calldata _name) external override {
+        require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
+
+        walletInfos[_wallet].name = _name;
+    }
+
+    function changeDescription(address _wallet, string calldata _description) external override {
+        require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
+
+        walletInfos[_wallet].description = _description;
     }
 
     mapping(address => address[]) internal walletsForOwnerValues;
@@ -98,10 +134,11 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         address _owner,
         uint256 _from,
         uint256 _to
-    ) external view override returns (address[] memory) {
-        address[] memory values = new address[](_to - _from);
+    ) external view override returns (WalletInfo[] memory) {
+        WalletInfo[] memory values = new WalletInfo[](_to - _from);
         for (uint256 i = _from; i < _to; i++) {
-            values[i - _from] = walletsForOwnerValues[_owner][i];
+            address wallet = walletsForOwnerValues[_owner][i];
+            values[i - _from] = walletInfos[wallet];
         }
         return values;
     }
