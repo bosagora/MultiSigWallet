@@ -14,7 +14,11 @@
         "lint": "tslint --config tslint.json \\\"{src,test}/**/*.ts\\\"",
         "lint-fix": "tslint --fix --config tslint.json \\\"{src,test}/**/*.ts\\\"",
         "formatting:check": "prettier '**/*.{json,sol,ts,js,md}' -c",
-        "formatting:write": "prettier '**/*.{json,sol,ts,js,md}' --write"
+        "formatting:write": "prettier '**/*.{json,sol,ts,js,md}' --write",
+        "test:ExecutionAfterRequirementsChanged": "hardhat test test/ExecutionAfterRequirementsChanged.test.ts",
+        "test:ExternalCalls": "hardhat test test/ExternalCalls.test.ts",
+        "test:Factory": "hardhat test test/Factory.test.ts",
+        "test:MultiSigToken": "hardhat test test/MultiSigToken.test.ts"
     },
     "repository": {
         "type": "git",
