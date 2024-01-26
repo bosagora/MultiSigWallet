@@ -14,6 +14,8 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      *  Events
      */
     event ContractInstantiation(address sender, address wallet);
+    event ChangedName(address wallet, string name);
+    event ChangedDescription(address wallet, string description);
 
     /*
      *  Storage
@@ -95,12 +97,16 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
 
         walletInfos[_wallet].name = _name;
+
+        emit ChangedName(_wallet, _name);
     }
 
     function changeDescription(address _wallet, string calldata _description) external override {
         require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
 
         walletInfos[_wallet].description = _description;
+
+        emit ChangedDescription(_wallet, _description);
     }
 
     mapping(address => address[]) internal walletsForOwnerValues;
