@@ -25,27 +25,6 @@ function getAccounts() {
         accounts.push(process.env.DEPLOYER);
     }
 
-    if (process.env.OWNER1 !== undefined && process.env.OWNER1.trim() !== "" && reg_bytes64.test(process.env.OWNER1)) {
-        accounts.push(process.env.OWNER1);
-    } else {
-        process.env.OWNER1 = Wallet.createRandom().privateKey;
-        accounts.push(process.env.OWNER1);
-    }
-
-    if (process.env.OWNER2 !== undefined && process.env.OWNER2.trim() !== "" && reg_bytes64.test(process.env.OWNER2)) {
-        accounts.push(process.env.OWNER2);
-    } else {
-        process.env.OWNER = Wallet.createRandom().privateKey;
-        accounts.push(process.env.OWNER);
-    }
-
-    if (process.env.OWNER3 !== undefined && process.env.OWNER3.trim() !== "" && reg_bytes64.test(process.env.OWNER3)) {
-        accounts.push(process.env.OWNER3);
-    } else {
-        process.env.OWNER3 = Wallet.createRandom().privateKey;
-        accounts.push(process.env.OWNER3);
-    }
-
     while (accounts.length < 50) {
         accounts.push(Wallet.createRandom().privateKey);
     }
