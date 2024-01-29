@@ -177,8 +177,14 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _destination Transaction target address.
     /// @param _value Transaction ether value.
     /// @param _data Transaction data payload.
-    function submitTransaction(address _destination, uint256 _value, bytes calldata _data) external override {
-        uint256 transactionId = addTransaction(_destination, _value, _data);
+    function submitTransaction(
+        string memory _title,
+        string memory _description,
+        address _destination,
+        uint256 _value,
+        bytes calldata _data
+    ) external override {
+        uint256 transactionId = addTransaction(_title, _description, _destination, _value, _data);
         _confirmTransaction(transactionId);
     }
 
@@ -258,12 +264,16 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _data Transaction data payload.
     /// @return transaction ID.
     function addTransaction(
+        string memory _title,
+        string memory _description,
         address _destination,
         uint256 _value,
         bytes calldata _data
     ) internal notNull(_destination) returns (uint256) {
         uint256 transactionId = transactionCount;
         transactions[transactionId] = Transaction({
+            title: _title,
+            description: _description,
             destination: _destination,
             value: _value,
             data: _data,

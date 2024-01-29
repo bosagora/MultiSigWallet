@@ -1,6 +1,7 @@
 {
     "name": "multisig-wallet-contracts-lib",
-    "version": "1.0.6",
+    "version": "1.0.7",
+
     "description": "",
     "main": "dist/bundle-cjs.js",
     "module": "dist/bundle-esm.js",

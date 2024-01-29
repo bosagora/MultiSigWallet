@@ -136,7 +136,9 @@ describe("Test for MultiSigWalletFactory", () => {
 
         const removeOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("removeOwner", [account2.address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multiSigWallet1.connect(account0).submitTransaction(multiSigWallet1.address, 0, removeOwnerEncoded),
+            await multiSigWallet1
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigWallet1.address, 0, removeOwnerEncoded),
             multiSigWallet1.interface,
             "Submission",
             "transactionId"
@@ -162,7 +164,9 @@ describe("Test for MultiSigWalletFactory", () => {
 
         const addOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("addOwner", [account6.address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multiSigWallet1.connect(account0).submitTransaction(multiSigWallet1.address, 0, addOwnerEncoded),
+            await multiSigWallet1
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigWallet1.address, 0, addOwnerEncoded),
             multiSigWallet1.interface,
             "Submission",
             "transactionId"
@@ -209,7 +213,9 @@ describe("Test for MultiSigWalletFactory", () => {
             account7.address,
         ]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multiSigWallet1.connect(account0).submitTransaction(multiSigWallet1.address, 0, replaceOwnerEncoded),
+            await multiSigWallet1
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigWallet1.address, 0, replaceOwnerEncoded),
             multiSigWallet1.interface,
             "Submission",
             "transactionId"

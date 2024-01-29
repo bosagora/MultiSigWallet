@@ -51,7 +51,9 @@ describe("MultiSigWallet", () => {
         // Add owner wa_4
         const addOwnerData = multisigInstance.interface.encodeFunctionData("addOwner", [owners[3].address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multisigInstance.connect(owners[0]).submitTransaction(multisigInstance.address, 0, addOwnerData),
+            await multisigInstance
+                .connect(owners[0])
+                .submitTransaction("title", "description", multisigInstance.address, 0, addOwnerData),
             multisigInstance.interface,
             "Submission",
             "transactionId"
@@ -76,7 +78,7 @@ describe("MultiSigWallet", () => {
         const transactionId2 = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])
-                .submitTransaction(multisigInstance.address, 0, updateRequirementData),
+                .submitTransaction("title", "description", multisigInstance.address, 0, updateRequirementData),
             multisigInstance.interface,
             "Submission",
             "transactionId"

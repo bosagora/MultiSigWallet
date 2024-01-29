@@ -73,12 +73,20 @@ describe("Test for Validator", () => {
         const amount = BOACoin.make("1").value;
         assert.deepStrictEqual(await provider.getBalance(account.address), BigNumber.from(0));
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multisigInstance.connect(owners[0]).submitTransaction(account.address, amount, "0x"),
+            await multisigInstance
+                .connect(owners[0])
+                .submitTransaction("title", "description", account.address, amount, "0x"),
             multisigInstance.interface,
             "Submission",
             "transactionId"
         );
         assert.ok(transactionId !== undefined);
+
+        const res = await multisigInstance.getTransaction(transactionId);
+        assert.deepStrictEqual(res.title, "title");
+        assert.deepStrictEqual(res.description, "description");
+        assert.deepStrictEqual(res.destination, account.address);
+        assert.deepStrictEqual(res.value, amount);
 
         const executedTransactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance.connect(owners[1]).confirmTransaction(transactionId),
@@ -100,7 +108,9 @@ describe("Test for Validator", () => {
         // Encode transfer call for the multisig
         const transferEncoded = tokenInstance.interface.encodeFunctionData("transfer", [accounts[1].address, amount]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multisigInstance.connect(owners[0]).submitTransaction(tokenInstance.address, 0, transferEncoded),
+            await multisigInstance
+                .connect(owners[0])
+                .submitTransaction("title", "description", tokenInstance.address, 0, transferEncoded),
             multisigInstance.interface,
             "Submission",
             "transactionId"
@@ -125,7 +135,9 @@ describe("Test for Validator", () => {
         // Encode transfer call for the multisig
         const transferEncoded = tokenInstance.interface.encodeFunctionData("transfer", [accounts[1].address, amount]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multisigInstance.connect(owners[0]).submitTransaction(tokenInstance.address, 0, transferEncoded),
+            await multisigInstance
+                .connect(owners[0])
+                .submitTransaction("title", "description", tokenInstance.address, 0, transferEncoded),
             multisigInstance.interface,
             "Submission",
             "transactionId"
@@ -150,7 +162,7 @@ describe("Test for Validator", () => {
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])
-                .submitTransaction(callsInstance.address, 67890, receive1uintEncoded),
+                .submitTransaction("title", "description", callsInstance.address, 67890, receive1uintEncoded),
             multisigInstance.interface,
             "Submission",
             "transactionId"
@@ -178,7 +190,7 @@ describe("Test for Validator", () => {
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])
-                .submitTransaction(callsInstance.address, 4040404, receive2uintsEncoded),
+                .submitTransaction("title", "description", callsInstance.address, 4040404, receive2uintsEncoded),
             multisigInstance.interface,
             "Submission",
             "transactionId"
@@ -209,7 +221,7 @@ describe("Test for Validator", () => {
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])
-                .submitTransaction(callsInstance.address, 10, receive1bytesEncoded),
+                .submitTransaction("title", "description", callsInstance.address, 10, receive1bytesEncoded),
             multisigInstance.interface,
             "Submission",
             "transactionId"

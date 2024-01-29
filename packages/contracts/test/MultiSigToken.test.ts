@@ -120,7 +120,9 @@ describe("Test for MultiSigWalletFactory", () => {
         const mintEncoded = multiSigToken.interface.encodeFunctionData("mint", [account3.address, amount]);
 
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multiSigWallet.connect(account0).submitTransaction(multiSigToken.address, 0, mintEncoded),
+            await multiSigWallet
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigToken.address, 0, mintEncoded),
             multiSigWallet.interface,
             "Submission",
             "transactionId"
@@ -162,7 +164,9 @@ describe("Test for MultiSigWalletFactory", () => {
         const mintEncoded = multiSigToken.interface.encodeFunctionData("transfer", [account4.address, amount]);
 
         const transactionId = await ContractUtils.getEventValueBigNumber(
-            await multiSigWallet.connect(account0).submitTransaction(multiSigToken.address, 0, mintEncoded),
+            await multiSigWallet
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigToken.address, 0, mintEncoded),
             multiSigWallet.interface,
             "Submission",
             "transactionId"

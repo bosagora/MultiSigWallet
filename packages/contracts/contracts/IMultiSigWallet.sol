@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IMultiSigWallet is IERC165 {
     struct Transaction {
+        string title;
+        string description;
         address destination;
         uint256 value;
         bytes data;
@@ -24,7 +26,13 @@ interface IMultiSigWallet is IERC165 {
     function getConfirmationCount(uint256 _transactionId) external view returns (uint256);
     function getConfirmations(uint256 _transactionId) external view returns (address[] memory);
 
-    function submitTransaction(address _destination, uint256 _value, bytes calldata _data) external;
+    function submitTransaction(
+        string memory _title,
+        string memory _description,
+        address _destination,
+        uint256 _value,
+        bytes calldata _data
+    ) external;
     function confirmTransaction(uint256 _transactionId) external;
     function revokeConfirmation(uint256 _transactionId) external;
     function executeTransaction(uint256 _transactionId) external;
