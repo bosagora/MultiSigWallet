@@ -272,8 +272,11 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     ) internal notNull(_destination) returns (uint256) {
         uint256 transactionId = transactionCount;
         transactions[transactionId] = Transaction({
+            id: transactionId,
             title: _title,
             description: _description,
+            creatorAddress: msg.sender,
+            creationTimestamp: block.timestamp,
             destination: _destination,
             value: _value,
             data: _data,
