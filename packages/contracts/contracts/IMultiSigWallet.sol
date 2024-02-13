@@ -6,8 +6,11 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 interface IMultiSigWallet is IERC165 {
     struct Transaction {
+        uint256 id;
         string title;
         string description;
+        address creatorAddress;
+        uint256 creationTimestamp;
         address destination;
         uint256 value;
         bytes data;
