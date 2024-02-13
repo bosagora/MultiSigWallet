@@ -15,6 +15,7 @@ interface IMultiSigWallet is IERC165 {
         uint256 value;
         bytes data;
         bool executed;
+        address[] approval;
     }
 
     function getName() external view returns (string memory);
