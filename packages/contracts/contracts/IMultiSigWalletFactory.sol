@@ -10,7 +10,7 @@ interface IMultiSigWalletFactory is IERC165 {
         address wallet;
         string name;
         string description;
-        uint256 time;
+        uint256 createdTime;
     }
     function create(
         string calldata _name,
@@ -25,8 +25,6 @@ interface IMultiSigWalletFactory is IERC165 {
         uint256 _to
     ) external view returns (WalletInfo[] memory);
     function getWalletInfo(address _wallet) external view returns (WalletInfo memory);
-    function changeName(address _wallet, string calldata _name) external;
-    function changeDescription(address _wallet, string calldata _description) external;
 
     function addOwner(address _owner, address _wallet) external;
     function removeOwner(address _owner, address _wallet) external;

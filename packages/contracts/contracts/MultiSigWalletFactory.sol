@@ -22,7 +22,6 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      */
     mapping(address => bool) internal hasWallets;
     mapping(address => address[]) internal wallets;
-    mapping(address => WalletInfo) internal walletInfos;
 
     /*
      * Public functions
@@ -39,19 +38,13 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         address[] memory _owners,
         uint256 _required
     ) external override returns (address) {
-        address wallet = address(new MultiSigWallet(address(this), _owners, _required));
+        address wallet = address(
+            new MultiSigWallet(address(this), _name, _description, msg.sender, _owners, _required)
+        );
         for (uint256 idx = 0; idx < _owners.length; idx++) {
             _addOwner(_owners[idx], wallet);
         }
         register(wallet);
-        WalletInfo memory walletInfo = WalletInfo({
-            creator: msg.sender,
-            wallet: wallet,
-            name: _name,
-            description: _description,
-            time: block.timestamp
-        });
-        walletInfos[wallet] = walletInfo;
         return wallet;
     }
 
@@ -81,7 +74,14 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         WalletInfo[] memory values = new WalletInfo[](_to - _from);
         for (uint256 i = _from; i < _to; i++) {
             address wallet = wallets[_creator][i];
-            values[i - _from] = walletInfos[wallet];
+            IMultiSigWallet msw = IMultiSigWallet(wallet);
+            values[i - _from] = WalletInfo({
+                creator: msw.getCreator(),
+                wallet: wallet,
+                name: msw.getName(),
+                description: msw.getDescription(),
+                createdTime: msw.getCreatedTime()
+            });
         }
         return values;
     }
@@ -90,23 +90,15 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     /// @param _wallet Address of wallet
     /// @return information of wallet
     function getWalletInfo(address _wallet) external view override returns (WalletInfo memory) {
-        return walletInfos[_wallet];
-    }
-
-    function changeName(address _wallet, string calldata _name) external override {
-        require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
-
-        walletInfos[_wallet].name = _name;
-
-        emit ChangedName(_wallet, _name);
-    }
-
-    function changeDescription(address _wallet, string calldata _description) external override {
-        require(walletInfos[_wallet].creator == msg.sender, "Sender is not authorized to execute");
-
-        walletInfos[_wallet].description = _description;
-
-        emit ChangedDescription(_wallet, _description);
+        IMultiSigWallet msw = IMultiSigWallet(_wallet);
+        return
+            WalletInfo({
+                creator: msw.getCreator(),
+                wallet: _wallet,
+                name: msw.getName(),
+                description: msw.getDescription(),
+                createdTime: msw.getCreatedTime()
+            });
     }
 
     mapping(address => address[]) internal walletsForOwnerValues;
@@ -144,7 +136,14 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         WalletInfo[] memory values = new WalletInfo[](_to - _from);
         for (uint256 i = _from; i < _to; i++) {
             address wallet = walletsForOwnerValues[_owner][i];
-            values[i - _from] = walletInfos[wallet];
+            IMultiSigWallet msw = IMultiSigWallet(wallet);
+            values[i - _from] = WalletInfo({
+                creator: msw.getCreator(),
+                wallet: wallet,
+                name: msw.getName(),
+                description: msw.getDescription(),
+                createdTime: msw.getCreatedTime()
+            });
         }
         return values;
     }
