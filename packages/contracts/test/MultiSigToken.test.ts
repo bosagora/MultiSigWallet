@@ -77,13 +77,13 @@ describe("Test for MultiSigWalletFactory", () => {
         assert.ok(multiSigWallet);
 
         assert.deepStrictEqual(
-            await multiSigWallet.getOwners(),
+            await multiSigWallet.getMembers(),
             owners1.map((m) => m.address)
         );
 
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account0.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account1.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account2.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account1.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account2.address), BigNumber.from(1));
     });
 
     it("Create Token, Owner is wallet", async () => {

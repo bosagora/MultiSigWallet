@@ -51,7 +51,7 @@ describe("MultiSigWallet", () => {
         assert.deepStrictEqual(balance.valueOf(), deposit);
 
         // Add owner wa_4
-        const addOwnerData = multisigInstance.interface.encodeFunctionData("addOwner", [owners[3].address]);
+        const addOwnerData = multisigInstance.interface.encodeFunctionData("addMember", [owners[3].address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])

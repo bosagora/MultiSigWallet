@@ -87,9 +87,9 @@ describe("Test for MultiSigWalletFactory", () => {
             requiredConfirmations
         );
         assert.ok(multiSigWallet1);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account0.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account1.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account2.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account1.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account2.address), BigNumber.from(1));
 
         multiSigWallet2 = await deployMultiSigWallet(
             multiSigFactory.address,
@@ -100,9 +100,9 @@ describe("Test for MultiSigWalletFactory", () => {
             requiredConfirmations
         );
         assert.ok(multiSigWallet2);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account3.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account4.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account5.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account3.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account4.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account5.address), BigNumber.from(1));
 
         multiSigWallet3 = await deployMultiSigWallet(
             multiSigFactory.address,
@@ -113,10 +113,10 @@ describe("Test for MultiSigWalletFactory", () => {
             requiredConfirmations
         );
         assert.ok(multiSigWallet3);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account0.address), BigNumber.from(2));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account3.address), BigNumber.from(2));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(2));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account3.address), BigNumber.from(2));
 
-        const res = await multiSigFactory.getWalletsForOwner(account0.address, 0, 2);
+        const res = await multiSigFactory.getWalletsForMember(account0.address, 0, 2);
         assert.deepStrictEqual(
             res.map((m) => m.wallet),
             [multiSigWallet1.address, multiSigWallet3.address]
@@ -131,10 +131,10 @@ describe("Test for MultiSigWalletFactory", () => {
         );
     });
 
-    it("Remove owner", async () => {
+    it("Remove member", async () => {
         assert.ok(multiSigWallet1);
 
-        const removeOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("removeOwner", [account2.address]);
+        const removeOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("removeMember", [account2.address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multiSigWallet1
                 .connect(account0)
@@ -154,15 +154,15 @@ describe("Test for MultiSigWalletFactory", () => {
 
         // Check that transaction has been executed
         assert.deepStrictEqual(transactionId, executedTransactionId);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account2.address), BigNumber.from(0));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account2.address), BigNumber.from(0));
 
-        assert.deepStrictEqual(await multiSigWallet1.getOwners(), [account0.address, account1.address]);
+        assert.deepStrictEqual(await multiSigWallet1.getMembers(), [account0.address, account1.address]);
     });
 
-    it("Add owner", async () => {
+    it("Add member", async () => {
         assert.ok(multiSigWallet1);
 
-        const addOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("addOwner", [account6.address]);
+        const addOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("addMember", [account6.address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multiSigWallet1
                 .connect(account0)
@@ -182,15 +182,15 @@ describe("Test for MultiSigWalletFactory", () => {
 
         // Check that transaction has been executed
         assert.deepStrictEqual(transactionId, executedTransactionId);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account6.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account6.address), BigNumber.from(1));
 
-        assert.deepStrictEqual(await multiSigWallet1.getOwners(), [
+        assert.deepStrictEqual(await multiSigWallet1.getMembers(), [
             account0.address,
             account1.address,
             account6.address,
         ]);
 
-        const res = await multiSigFactory.getWalletsForOwner(account6.address, 0, 1);
+        const res = await multiSigFactory.getWalletsForMember(account6.address, 0, 1);
         assert.deepStrictEqual(
             res.map((m) => m.wallet),
             [multiSigWallet1.address]
@@ -205,10 +205,10 @@ describe("Test for MultiSigWalletFactory", () => {
         );
     });
 
-    it("Replace owner", async () => {
+    it("Replace member", async () => {
         assert.ok(multiSigWallet1);
 
-        const replaceOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("replaceOwner", [
+        const replaceOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("replaceMember", [
             account1.address,
             account7.address,
         ]);
@@ -231,15 +231,15 @@ describe("Test for MultiSigWalletFactory", () => {
 
         // Check that transaction has been executed
         assert.deepStrictEqual(transactionId, executedTransactionId);
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForOwner(account7.address), BigNumber.from(1));
+        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account7.address), BigNumber.from(1));
 
-        assert.deepStrictEqual(await multiSigWallet1.getOwners(), [
+        assert.deepStrictEqual(await multiSigWallet1.getMembers(), [
             account0.address,
             account7.address,
             account6.address,
         ]);
 
-        const res = await multiSigFactory.getWalletsForOwner(account7.address, 0, 1);
+        const res = await multiSigFactory.getWalletsForMember(account7.address, 0, 1);
         assert.deepStrictEqual(
             res.map((m) => m.wallet),
             [multiSigWallet1.address]
@@ -262,5 +262,94 @@ describe("Test for MultiSigWalletFactory", () => {
         assert.deepStrictEqual(res.name, walletInfos[0].name);
         assert.deepStrictEqual(res.description, walletInfos[0].description);
         assert.deepStrictEqual(res.creator, deployer.address);
+    });
+});
+
+describe("Test for MultiSigWalletFactory 2", () => {
+    const raws = HardhatAccount.keys.map((m) => new Wallet(m, ethers.provider));
+    const [deployer, account0, account1, account2, account3, account4, account5, account6, account7] = raws;
+    const members = [account0, account1, account2];
+
+    let multiSigFactory: MultiSigWalletFactory;
+    let multiSigWallet1: MultiSigWallet | undefined;
+    const requiredConfirmations = 2;
+
+    const walletInfos = [
+        {
+            name: "My Wallet 1",
+            description: "My first multi-sign wallet",
+        },
+        {
+            name: "My Wallet 2",
+            description: "My second multi-sign wallet",
+        },
+        {
+            name: "My Wallet 3",
+            description: "My third multi-sign wallet",
+        },
+        {
+            name: "Fund",
+            description: "Fund of develop",
+        },
+    ];
+
+    before(async () => {
+        multiSigFactory = await deployMultiSigWalletFactory(deployer);
+        assert.ok(multiSigFactory);
+    });
+
+    it("Create Wallet by Factory", async () => {
+        multiSigWallet1 = await deployMultiSigWallet(
+            multiSigFactory.address,
+            deployer,
+            walletInfos[0].name,
+            walletInfos[0].description,
+            members.map((m) => m.address),
+            requiredConfirmations
+        );
+        assert.ok(multiSigWallet1);
+        assert.deepStrictEqual(
+            await multiSigWallet1.getMembers(),
+            members.map((m) => m.address)
+        );
+    });
+
+    it("Change member", async () => {
+        assert.ok(multiSigWallet1);
+
+        const additional = [account3, account4, account5];
+        const removal = [account1, account2];
+
+        const addOwnerEncoded = multiSigWallet1.interface.encodeFunctionData("changeMember", [
+            additional.map((m) => m.address),
+            removal.map((m) => m.address),
+        ]);
+        const transactionId = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet1
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigWallet1.address, 0, addOwnerEncoded),
+            multiSigWallet1.interface,
+            "Submission",
+            "transactionId"
+        );
+        assert.ok(transactionId !== undefined);
+
+        const executedTransactionId = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet1.connect(account1).confirmTransaction(transactionId),
+            multiSigWallet1.interface,
+            "Execution",
+            "transactionId"
+        );
+
+        // Check that transaction has been executed
+        assert.deepStrictEqual(transactionId, executedTransactionId);
+
+        // console.log(await multiSigWallet1.getMembers());
+        assert.deepStrictEqual(await multiSigWallet1.getMembers(), [
+            account0.address,
+            account5.address,
+            account4.address,
+            account3.address,
+        ]);
     });
 });
