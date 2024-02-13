@@ -22,7 +22,7 @@ interface IMultiSigWallet is IERC165 {
     function getCreator() external view returns (address);
     function getCreatedTime() external view returns (uint256);
 
-    function getOwners() external view returns (address[] memory);
+    function getMembers() external view returns (address[] memory);
     function getRequired() external view returns (uint256);
 
     function isOwner(address _address) external view returns (bool);

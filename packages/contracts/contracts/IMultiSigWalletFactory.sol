@@ -26,9 +26,13 @@ interface IMultiSigWalletFactory is IERC165 {
     ) external view returns (WalletInfo[] memory);
     function getWalletInfo(address _wallet) external view returns (WalletInfo memory);
 
-    function addOwner(address _owner, address _wallet) external;
-    function removeOwner(address _owner, address _wallet) external;
+    function addMember(address _member, address _wallet) external;
+    function removeMember(address _member, address _wallet) external;
 
-    function getNumberOfWalletsForOwner(address _owner) external view returns (uint256);
-    function getWalletsForOwner(address _owner, uint256 _from, uint256 _to) external view returns (WalletInfo[] memory);
+    function getNumberOfWalletsForMember(address _member) external view returns (uint256);
+    function getWalletsForMember(
+        address _member,
+        uint256 _from,
+        uint256 _to
+    ) external view returns (WalletInfo[] memory);
 }

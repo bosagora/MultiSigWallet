@@ -38,8 +38,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
 
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
-    mapping(address => bool) internal ownerMap;
-    address[] internal owners;
+    mapping(address => bool) internal memberMap;
+    address[] internal members;
     uint256 internal required;
     uint256 internal transactionCount;
     address internal factoryAddress;
@@ -52,13 +52,13 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         _;
     }
 
-    modifier ownerDoesNotExist(address _owner) {
-        require(!ownerMap[_owner]);
+    modifier memberDoesNotExist(address _member) {
+        require(!memberMap[_member]);
         _;
     }
 
-    modifier ownerExists(address _owner) {
-        require(ownerMap[_owner]);
+    modifier memberExists(address _member) {
+        require(memberMap[_member]);
         _;
     }
 
@@ -67,13 +67,13 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         _;
     }
 
-    modifier confirmed(uint256 _transactionId, address _owner) {
-        require(confirmations[_transactionId][_owner]);
+    modifier confirmed(uint256 _transactionId, address _member) {
+        require(confirmations[_transactionId][_member]);
         _;
     }
 
-    modifier notConfirmed(uint256 _transactionId, address _owner) {
-        require(!confirmations[_transactionId][_owner]);
+    modifier notConfirmed(uint256 _transactionId, address _member) {
+        require(!confirmations[_transactionId][_member]);
         _;
     }
 
@@ -95,20 +95,20 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      * Public functions
      */
-    /// @dev Contract constructor sets initial owners and required number of confirmations.
+    /// @dev Contract constructor sets initial members and required number of confirmations.
     /// @param _factory MultiSigWalletFactory.
-    /// @param _owners List of initial owners.
+    /// @param _members List of initial members.
     /// @param _required Number of required confirmations.
     constructor(
         address _factory,
         string memory _name,
         string memory _description,
         address _creator,
-        address[] memory _owners,
+        address[] memory _members,
         uint256 _required
     ) {
         require(
-            _owners.length <= MAX_OWNER_COUNT && _required <= _owners.length && _required != 0 && _owners.length != 0
+            _members.length <= MAX_OWNER_COUNT && _required <= _members.length && _required != 0 && _members.length != 0
         );
 
         factoryAddress = _factory;
@@ -117,11 +117,11 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         creator = _creator;
         createdTime = block.timestamp;
 
-        for (uint256 i = 0; i < _owners.length; i++) {
-            require(!ownerMap[_owners[i]] && _owners[i] != address(0));
-            ownerMap[_owners[i]] = true;
+        for (uint256 i = 0; i < _members.length; i++) {
+            require(!memberMap[_members[i]] && _members[i] != address(0));
+            memberMap[_members[i]] = true;
         }
-        owners = _owners;
+        members = _members;
         required = _required;
     }
 
@@ -137,54 +137,64 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     }
 
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
-    /// @param _owner Address of new owner.
-    function addOwner(
-        address _owner
-    ) public onlyWallet ownerDoesNotExist(_owner) notNull(_owner) validRequirement(owners.length + 1, required) {
-        ownerMap[_owner] = true;
-        owners.push(_owner);
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_owner, address(this));
-        emit OwnerAddition(_owner);
+    /// @param _member Address of new owner.
+    function addMember(
+        address _member
+    ) public onlyWallet memberDoesNotExist(_member) notNull(_member) validRequirement(members.length + 1, required) {
+        memberMap[_member] = true;
+        members.push(_member);
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addMember(_member, address(this));
+        emit OwnerAddition(_member);
     }
 
     /// @dev Allows to remove an owner. Transaction has to be sent by wallet.
-    /// @param _owner Address of owner.
-    function removeOwner(address _owner) public onlyWallet ownerExists(_owner) {
-        ownerMap[_owner] = false;
-        for (uint256 i = 0; i < owners.length - 1; i++)
-            if (owners[i] == _owner) {
-                owners[i] = owners[owners.length - 1];
+    /// @param _member Address of owner.
+    function removeMember(address _member) public onlyWallet memberExists(_member) {
+        memberMap[_member] = false;
+        for (uint256 i = 0; i < members.length - 1; i++)
+            if (members[i] == _member) {
+                members[i] = members[members.length - 1];
                 break;
             }
-        owners.pop();
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeOwner(_owner, address(this));
-        if (required > owners.length) changeRequirement(owners.length);
-        emit OwnerRemoval(_owner);
+        members.pop();
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeMember(_member, address(this));
+        if (required > members.length) changeRequirement(members.length);
+        emit OwnerRemoval(_member);
     }
 
     /// @dev Allows to replace an owner with a new owner. Transaction has to be sent by wallet.
-    /// @param _owner Address of owner to be replaced.
+    /// @param _member Address of owner to be replaced.
     /// @param _newOwner Address of new owner.
-    function replaceOwner(
-        address _owner,
+    function replaceMember(
+        address _member,
         address _newOwner
-    ) public onlyWallet ownerExists(_owner) ownerDoesNotExist(_newOwner) {
-        for (uint256 i = 0; i < owners.length; i++)
-            if (owners[i] == _owner) {
-                owners[i] = _newOwner;
+    ) public onlyWallet memberExists(_member) memberDoesNotExist(_newOwner) {
+        for (uint256 i = 0; i < members.length; i++)
+            if (members[i] == _member) {
+                members[i] = _newOwner;
                 break;
             }
-        ownerMap[_owner] = false;
-        ownerMap[_newOwner] = true;
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeOwner(_owner, address(this));
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addOwner(_newOwner, address(this));
-        emit OwnerRemoval(_owner);
+        memberMap[_member] = false;
+        memberMap[_newOwner] = true;
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeMember(_member, address(this));
+        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addMember(_newOwner, address(this));
+        emit OwnerRemoval(_member);
         emit OwnerAddition(_newOwner);
+    }
+
+    /// @dev Allow the addition and removal of multiple members.
+    function changeMember(address[] calldata additionalMembers, address[] calldata removalMembers) public onlyWallet {
+        for (uint256 i = 0; i < additionalMembers.length; i++) {
+            addMember(additionalMembers[i]);
+        }
+        for (uint256 i = 0; i < removalMembers.length; i++) {
+            removeMember(removalMembers[i]);
+        }
     }
 
     /// @dev Allows to change the number of required confirmations. Transaction has to be sent by wallet.
     /// @param _required Number of required confirmations.
-    function changeRequirement(uint256 _required) public onlyWallet validRequirement(owners.length, _required) {
+    function changeRequirement(uint256 _required) public onlyWallet validRequirement(members.length, _required) {
         required = _required;
         emit RequirementChange(_required);
     }
@@ -214,7 +224,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _transactionId Transaction ID.
     function _confirmTransaction(
         uint256 _transactionId
-    ) internal ownerExists(msg.sender) transactionExists(_transactionId) notConfirmed(_transactionId, msg.sender) {
+    ) internal memberExists(msg.sender) transactionExists(_transactionId) notConfirmed(_transactionId, msg.sender) {
         confirmations[_transactionId][msg.sender] = true;
         emit Confirmation(msg.sender, _transactionId);
         _executeTransaction(_transactionId);
@@ -224,7 +234,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _transactionId Transaction ID.
     function revokeConfirmation(
         uint256 _transactionId
-    ) external override ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
+    ) external override memberExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
         confirmations[_transactionId][msg.sender] = false;
         emit Revocation(msg.sender, _transactionId);
     }
@@ -239,7 +249,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _transactionId Transaction ID.
     function _executeTransaction(
         uint256 _transactionId
-    ) internal ownerExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
+    ) internal memberExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
         if (isConfirmed(_transactionId)) {
             Transaction storage txn = transactions[_transactionId];
             txn.executed = true;
@@ -264,8 +274,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @return confirmation status.
     function isConfirmed(uint256 _transactionId) public view returns (bool) {
         uint256 count = 0;
-        for (uint256 i = 0; i < owners.length; i++) {
-            if (confirmations[_transactionId][owners[i]]) count += 1;
+        for (uint256 i = 0; i < members.length; i++) {
+            if (confirmations[_transactionId][members[i]]) count += 1;
             if (count == required) return true;
         }
         return false;
@@ -311,7 +321,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @return number of confirmations.
     function getConfirmationCount(uint256 _transactionId) external view override returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < owners.length; i++) if (confirmations[_transactionId][owners[i]]) count += 1;
+        for (uint256 i = 0; i < members.length; i++) if (confirmations[_transactionId][members[i]]) count += 1;
         return count;
     }
 
@@ -326,22 +336,22 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         return count;
     }
 
-    /// @dev Returns list of owners.
+    /// @dev Returns list of members.
     /// @return array of owner addresses.
-    function getOwners() external view override returns (address[] memory) {
-        return owners;
+    function getMembers() external view override returns (address[] memory) {
+        return members;
     }
 
     /// @dev Returns array with owner addresses, which confirmed transaction.
     /// @param _transactionId Transaction ID.
     /// @return array of owner addresses.
     function getConfirmations(uint256 _transactionId) external view override returns (address[] memory) {
-        address[] memory confirmationsTemp = new address[](owners.length);
+        address[] memory confirmationsTemp = new address[](members.length);
         uint256 count = 0;
         uint256 i;
-        for (i = 0; i < owners.length; i++)
-            if (confirmations[_transactionId][owners[i]]) {
-                confirmationsTemp[count] = owners[i];
+        for (i = 0; i < members.length; i++)
+            if (confirmations[_transactionId][members[i]]) {
+                confirmationsTemp[count] = members[i];
                 count += 1;
             }
         address[] memory values = new address[](count);
@@ -402,7 +412,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
 
     /// @dev Returns is owner
     function isOwner(address _address) external view override returns (bool) {
-        return ownerMap[_address];
+        return memberMap[_address];
     }
 
     function getName() external view override returns (string memory) {

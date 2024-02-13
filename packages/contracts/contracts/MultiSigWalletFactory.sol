@@ -42,7 +42,7 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
             new MultiSigWallet(address(this), _name, _description, msg.sender, _owners, _required)
         );
         for (uint256 idx = 0; idx < _owners.length; idx++) {
-            _addOwner(_owners[idx], wallet);
+            _addMember(_owners[idx], wallet);
         }
         register(wallet);
         return wallet;
@@ -105,37 +105,37 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     mapping(address => mapping(address => uint256)) internal walletsForOwnerIndexes;
 
     /// @dev Add a new owner on wallet
-    /// @param _owner Address of new owner.
-    /// @param _owner Address of wallet.
-    function addOwner(address _owner, address _wallet) external override {
-        _addOwner(_owner, _wallet);
+    /// @param _member Address of new owner.
+    /// @param _member Address of wallet.
+    function addMember(address _member, address _wallet) external override {
+        _addMember(_member, _wallet);
     }
 
     /// @dev Remove a new owner on wallet
-    /// @param _owner Address of removed owner.
-    /// @param _owner Address of wallet.
-    function removeOwner(address _owner, address _wallet) external override {
-        _removeOwner(_owner, _wallet);
+    /// @param _member Address of removed owner.
+    /// @param _member Address of wallet.
+    function removeMember(address _member, address _wallet) external override {
+        _removeMember(_member, _wallet);
     }
 
     /// @dev Returns number of wallets by owner.
-    /// @param _owner Address of owner.
-    function getNumberOfWalletsForOwner(address _owner) external view override returns (uint256) {
-        return walletsForOwnerValues[_owner].length;
+    /// @param _member Address of owner.
+    function getNumberOfWalletsForMember(address _member) external view override returns (uint256) {
+        return walletsForOwnerValues[_member].length;
     }
 
     /// @dev Returns list of the owner's wallet
     /// @param _from Index start position of wallet array.
     /// @param _to Index end position of wallet array.
     /// @return array of wallets.
-    function getWalletsForOwner(
-        address _owner,
+    function getWalletsForMember(
+        address _member,
         uint256 _from,
         uint256 _to
     ) external view override returns (WalletInfo[] memory) {
         WalletInfo[] memory values = new WalletInfo[](_to - _from);
         for (uint256 i = _from; i < _to; i++) {
-            address wallet = walletsForOwnerValues[_owner][i];
+            address wallet = walletsForOwnerValues[_member][i];
             IMultiSigWallet msw = IMultiSigWallet(wallet);
             values[i - _from] = WalletInfo({
                 creator: msw.getCreator(),
@@ -160,38 +160,38 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     }
 
     /// @dev Add a new owner on wallet
-    /// @param _owner Address of new owner.
-    /// @param _owner Address of wallet.
-    function _addOwner(address _owner, address _wallet) internal {
-        if (walletsForOwnerIndexes[_owner][_wallet] == 0) {
-            walletsForOwnerValues[_owner].push(_wallet);
-            walletsForOwnerIndexes[_owner][_wallet] = walletsForOwnerValues[_owner].length;
+    /// @param _member Address of new owner.
+    /// @param _member Address of wallet.
+    function _addMember(address _member, address _wallet) internal {
+        if (walletsForOwnerIndexes[_member][_wallet] == 0) {
+            walletsForOwnerValues[_member].push(_wallet);
+            walletsForOwnerIndexes[_member][_wallet] = walletsForOwnerValues[_member].length;
         }
     }
 
     /// @dev Remove a new owner on wallet
-    /// @param _owner Address of removed owner.
-    /// @param _owner Address of wallet.
-    function _removeOwner(address _owner, address _wallet) internal {
-        uint256 valueIndex = walletsForOwnerIndexes[_owner][_wallet];
+    /// @param _member Address of removed owner.
+    /// @param _member Address of wallet.
+    function _removeMember(address _member, address _wallet) internal {
+        uint256 valueIndex = walletsForOwnerIndexes[_member][_wallet];
         if (valueIndex != 0) {
             uint256 toDeleteIndex = valueIndex - 1;
-            uint256 lastIndex = walletsForOwnerValues[_owner].length - 1;
+            uint256 lastIndex = walletsForOwnerValues[_member].length - 1;
 
             if (lastIndex != toDeleteIndex) {
-                address lastValue = walletsForOwnerValues[_owner][lastIndex];
+                address lastValue = walletsForOwnerValues[_member][lastIndex];
 
                 // Move the last value to the index where the value to delete is
-                walletsForOwnerValues[_owner][toDeleteIndex] = lastValue;
+                walletsForOwnerValues[_member][toDeleteIndex] = lastValue;
                 // Update the index for the moved value
-                walletsForOwnerIndexes[_owner][lastValue] = valueIndex; // Replace lastValue's index to valueIndex
+                walletsForOwnerIndexes[_member][lastValue] = valueIndex; // Replace lastValue's index to valueIndex
             }
 
             // Delete the slot where the moved value was stored
-            walletsForOwnerValues[_owner].pop();
+            walletsForOwnerValues[_member].pop();
 
             // Delete the index for the deleted slot
-            delete walletsForOwnerIndexes[_owner][_wallet];
+            delete walletsForOwnerIndexes[_member][_wallet];
         }
     }
 }
