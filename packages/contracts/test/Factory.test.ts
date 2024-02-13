@@ -344,12 +344,92 @@ describe("Test for MultiSigWalletFactory 2", () => {
         // Check that transaction has been executed
         assert.deepStrictEqual(transactionId, executedTransactionId);
 
-        // console.log(await multiSigWallet1.getMembers());
         assert.deepStrictEqual(await multiSigWallet1.getMembers(), [
             account0.address,
             account5.address,
             account4.address,
             account3.address,
         ]);
+    });
+});
+
+describe("Test for MultiSigWalletFactory 3", () => {
+    const raws = HardhatAccount.keys.map((m) => new Wallet(m, ethers.provider));
+    const [deployer, account0, account1, account2, account3, account4, account5, account6, account7] = raws;
+    const members = [account0, account1, account2];
+
+    let multiSigFactory: MultiSigWalletFactory;
+    let multiSigWallet1: MultiSigWallet | undefined;
+    const requiredConfirmations = 2;
+
+    const walletInfos = [
+        {
+            name: "My Wallet 1",
+            description: "My first multi-sign wallet",
+        },
+        {
+            name: "My Wallet 2",
+            description: "My second multi-sign wallet",
+        },
+        {
+            name: "My Wallet 3",
+            description: "My third multi-sign wallet",
+        },
+        {
+            name: "Fund",
+            description: "Fund of develop",
+        },
+    ];
+
+    before(async () => {
+        multiSigFactory = await deployMultiSigWalletFactory(deployer);
+        assert.ok(multiSigFactory);
+    });
+
+    it("Create Wallet by Factory", async () => {
+        multiSigWallet1 = await deployMultiSigWallet(
+            multiSigFactory.address,
+            deployer,
+            walletInfos[0].name,
+            walletInfos[0].description,
+            members.map((m) => m.address),
+            requiredConfirmations
+        );
+        assert.ok(multiSigWallet1);
+        assert.deepStrictEqual(
+            await multiSigWallet1.getMembers(),
+            members.map((m) => m.address)
+        );
+    });
+
+    it("Change metadata", async () => {
+        assert.ok(multiSigWallet1);
+
+        const encodedData = multiSigWallet1.interface.encodeFunctionData("changeMetadata", [
+            walletInfos[1].name,
+            walletInfos[1].description,
+        ]);
+        const transactionId = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet1
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigWallet1.address, 0, encodedData),
+            multiSigWallet1.interface,
+            "Submission",
+            "transactionId"
+        );
+        assert.ok(transactionId !== undefined);
+
+        const executedTransactionId = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet1.connect(account1).confirmTransaction(transactionId),
+            multiSigWallet1.interface,
+            "Execution",
+            "transactionId"
+        );
+
+        // Check that transaction has been executed
+        assert.deepStrictEqual(transactionId, executedTransactionId);
+
+        assert.deepStrictEqual(await multiSigWallet1.getName(), walletInfos[1].name);
+        assert.deepStrictEqual(await multiSigWallet1.getDescription(), walletInfos[1].description);
     });
 });

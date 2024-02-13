@@ -199,6 +199,12 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         emit RequirementChange(_required);
     }
 
+    /// @dev Allows to change the metadata of wallet
+    function changeMetadata(string memory _name, string memory _description) public onlyWallet {
+        name = _name;
+        description = _description;
+    }
+
     /// @dev Allows an owner to submit and confirm a transaction.
     /// @param _destination Transaction target address.
     /// @param _value Transaction ether value.
