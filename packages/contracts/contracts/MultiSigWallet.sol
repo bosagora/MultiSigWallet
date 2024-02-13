@@ -226,6 +226,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256 _transactionId
     ) internal memberExists(msg.sender) transactionExists(_transactionId) notConfirmed(_transactionId, msg.sender) {
         confirmations[_transactionId][msg.sender] = true;
+        transactions[_transactionId].approval.push(msg.sender);
         emit Confirmation(msg.sender, _transactionId);
         _executeTransaction(_transactionId);
     }
@@ -236,6 +237,15 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256 _transactionId
     ) external override memberExists(msg.sender) confirmed(_transactionId, msg.sender) notExecuted(_transactionId) {
         confirmations[_transactionId][msg.sender] = false;
+        for (uint256 i = 0; i < transactions[_transactionId].approval.length - 1; i++) {
+            if (transactions[_transactionId].approval[i] == msg.sender) {
+                transactions[_transactionId].approval[i] = transactions[_transactionId].approval[
+                    transactions[_transactionId].approval.length - 1
+                ];
+                break;
+            }
+        }
+        transactions[_transactionId].approval.pop();
         emit Revocation(msg.sender, _transactionId);
     }
 
@@ -297,6 +307,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         bytes calldata _data
     ) internal notNull(_destination) returns (uint256) {
         uint256 transactionId = transactionCount;
+        address[] memory approval;
         transactions[transactionId] = Transaction({
             id: transactionId,
             title: _title,
@@ -306,7 +317,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
             destination: _destination,
             value: _value,
             data: _data,
-            executed: false
+            executed: false,
+            approval: approval
         });
         transactionCount += 1;
         emit Submission(transactionId);
