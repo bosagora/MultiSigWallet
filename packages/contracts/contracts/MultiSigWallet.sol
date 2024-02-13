@@ -31,6 +31,11 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Storage
      */
+    string public name;
+    string public description;
+    address public creator;
+    uint256 public createdTime;
+
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
     mapping(address => bool) internal ownerMap;
@@ -94,12 +99,23 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _factory MultiSigWalletFactory.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
-    constructor(address _factory, address[] memory _owners, uint256 _required) {
+    constructor(
+        address _factory,
+        string memory _name,
+        string memory _description,
+        address _creator,
+        address[] memory _owners,
+        uint256 _required
+    ) {
         require(
             _owners.length <= MAX_OWNER_COUNT && _required <= _owners.length && _required != 0 && _owners.length != 0
         );
 
         factoryAddress = _factory;
+        name = _name;
+        description = _description;
+        creator = _creator;
+        createdTime = block.timestamp;
 
         for (uint256 i = 0; i < _owners.length; i++) {
             require(!ownerMap[_owners[i]] && _owners[i] != address(0));
@@ -275,8 +291,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
             id: transactionId,
             title: _title,
             description: _description,
-            creatorAddress: msg.sender,
-            creationTimestamp: block.timestamp,
+            creator: msg.sender,
+            createdTime: block.timestamp,
             destination: _destination,
             value: _value,
             data: _data,
@@ -387,5 +403,21 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @dev Returns is owner
     function isOwner(address _address) external view override returns (bool) {
         return ownerMap[_address];
+    }
+
+    function getName() external view override returns (string memory) {
+        return name;
+    }
+
+    function getDescription() external view override returns (string memory) {
+        return description;
+    }
+
+    function getCreator() external view override returns (address) {
+        return creator;
+    }
+
+    function getCreatedTime() external view override returns (uint256) {
+        return createdTime;
     }
 }
