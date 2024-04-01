@@ -33,5 +33,3 @@ yarn-error.log*
 .env.localhost
 
 .idea
-
-/packages/contracts/deploy/bosagora_devnet/deployed_contracts.json
