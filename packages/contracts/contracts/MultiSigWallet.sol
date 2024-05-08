@@ -168,7 +168,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     function replaceMember(
         address _member,
         address _newOwner
-    ) public onlyWallet memberExists(_member) memberDoesNotExist(_newOwner) {
+    ) public onlyWallet memberExists(_member) memberDoesNotExist(_newOwner) notNull(_newOwner) {
         for (uint256 i = 0; i < members.length; i++)
             if (members[i] == _member) {
                 members[i] = _newOwner;
