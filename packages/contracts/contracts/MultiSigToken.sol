@@ -20,10 +20,9 @@ contract MultiSigToken is ERC20 {
             IMultiSigWallet(owner).supportsInterface(type(IMultiSigWallet).interfaceId),
             "Invalid interface ID of multi sig wallet"
         );
-        _mint(owner, 1e10 * 1e18);
     }
 
-    function mint(address _account, uint256 _amount) external onlyOwner {
-        _mint(_account, _amount);
+    function mint(uint256 _amount) external onlyOwner {
+        _mint(owner, _amount);
     }
 }
