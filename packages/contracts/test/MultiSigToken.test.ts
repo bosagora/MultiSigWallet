@@ -98,26 +98,21 @@ describe("Test for MultiSigWalletFactory", () => {
 
         multiSigToken = await deployToken(deployer, multiSigWallet.address);
         assert.deepStrictEqual(await multiSigToken.owner(), multiSigWallet.address);
-        assert.deepStrictEqual(
-            await multiSigToken.balanceOf(multiSigWallet.address),
-            BigNumber.from(10).pow(BigNumber.from(28))
-        );
+        assert.deepStrictEqual(await multiSigToken.balanceOf(multiSigWallet.address), BigNumber.from(0));
     });
 
-    it("Fail mint", async () => {
+    it("Fail mint initial supply", async () => {
         const amount = BigNumber.from(10).pow(BigNumber.from(18));
-        await expect(multiSigToken.connect(account0).mint(account3.address, amount)).to.be.revertedWith(
-            "Only the owner can execute"
-        );
+        await expect(multiSigToken.connect(account0).mint(amount)).to.be.revertedWith("Only the owner can execute");
     });
 
-    it("Success mint", async () => {
+    it("Success mint initial supply", async () => {
         assert.ok(multiSigWallet);
         assert.ok(multiSigToken);
 
-        const amount = BigNumber.from(10).pow(BigNumber.from(18));
+        const initialSupply = BigNumber.from(10).pow(BigNumber.from(28));
 
-        const mintEncoded = multiSigToken.interface.encodeFunctionData("mint", [account3.address, amount]);
+        const mintEncoded = multiSigToken.interface.encodeFunctionData("mint", [initialSupply]);
 
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multiSigWallet
@@ -140,7 +135,7 @@ describe("Test for MultiSigWalletFactory", () => {
         assert.deepStrictEqual(transactionId, executedTransactionId);
 
         // Check balance of target
-        assert.deepStrictEqual(await multiSigToken.balanceOf(account3.address), amount);
+        assert.deepStrictEqual(await multiSigToken.balanceOf(multiSigWallet.address), initialSupply);
     });
 
     it("Fail transfer", async () => {
@@ -239,19 +234,56 @@ describe("Test for MultiSigWalletFactory 2", () => {
 
         multiSigToken = await deployToken(deployer, multiSigWallet.address);
         assert.deepStrictEqual(await multiSigToken.owner(), multiSigWallet.address);
-        assert.deepStrictEqual(
-            await multiSigToken.balanceOf(multiSigWallet.address),
-            BigNumber.from(10).pow(BigNumber.from(28))
+        assert.deepStrictEqual(await multiSigToken.balanceOf(multiSigWallet.address), BigNumber.from(0));
+    });
+
+    it("mint initial supply", async () => {
+        assert.ok(multiSigWallet);
+        assert.ok(multiSigToken);
+
+        const initialSupply = BigNumber.from(10).pow(BigNumber.from(28));
+
+        const mintEncoded = multiSigToken.interface.encodeFunctionData("mint", [initialSupply]);
+
+        const transactionId = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet
+                .connect(account0)
+                .submitTransaction("title", "description", multiSigToken.address, 0, mintEncoded),
+            multiSigWallet.interface,
+            "Submission",
+            "transactionId"
         );
+        assert.ok(transactionId !== undefined);
+
+        const executedTransactionId1 = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet.connect(account1).confirmTransaction(transactionId),
+            multiSigWallet.interface,
+            "Confirmation",
+            "transactionId"
+        );
+
+        // Check that transaction has been executed
+        assert.deepStrictEqual(transactionId, executedTransactionId1);
+
+        const executedTransactionId2 = await ContractUtils.getEventValueBigNumber(
+            await multiSigWallet.connect(account2).confirmTransaction(transactionId),
+            multiSigWallet.interface,
+            "Execution",
+            "transactionId"
+        );
+
+        // Check that transaction has been executed
+        assert.deepStrictEqual(transactionId, executedTransactionId2);
+
+        // Check balance of target
+        assert.deepStrictEqual(await multiSigToken.balanceOf(multiSigWallet.address), initialSupply);
     });
 
     it("Success transfer", async () => {
         assert.ok(multiSigWallet);
         assert.ok(multiSigToken);
 
-        const initialSupply = BigNumber.from(10)
-            .pow(BigNumber.from(10))
-            .mul(BigNumber.from(10).pow(BigNumber.from(18)));
+        const initialSupply = BigNumber.from(10).pow(BigNumber.from(28));
         const amount = BigNumber.from(10).pow(BigNumber.from(18));
 
         assert.deepStrictEqual(await multiSigToken.balanceOf(multiSigWallet.address), initialSupply);
