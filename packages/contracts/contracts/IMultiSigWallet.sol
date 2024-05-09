@@ -46,11 +46,18 @@ interface IMultiSigWallet is IERC165 {
     function revokeConfirmation(uint256 _transactionId) external;
     function executeTransaction(uint256 _transactionId) external;
 
-    function getTransactionCountInCondition(bool _pending, bool _executed) external view returns (uint256);
+    function getTransactionCountInCondition(
+        bool _pending,
+        bool _executed,
+        uint256 _skip,
+        uint256 _limit
+    ) external view returns (uint256);
     function getTransactionIdsInCondition(
         uint256 _from,
         uint256 _to,
         bool _pending,
-        bool _executed
+        bool _executed,
+        uint256 _skip,
+        uint256 _limit
     ) external view returns (uint256[] memory);
 }

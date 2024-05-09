@@ -28,7 +28,7 @@ describe("MultiSigWallet", () => {
     const provider = ethers.provider;
     const raws = HardhatAccount.keys.map((m) => new Wallet(m, ethers.provider));
     const [deployer, owner0, owner1, owner2, owner3, account0, account1, account2] = raws;
-    const owners = [owner0, owner1, owner2, owner3];
+    const owners = [owner0, owner1, owner2];
     const accounts = [account0, account1, account2];
 
     before(async () => {
@@ -51,7 +51,7 @@ describe("MultiSigWallet", () => {
         assert.deepStrictEqual(balance.valueOf(), deposit);
 
         // Add owner wa_4
-        const addOwnerData = multisigInstance.interface.encodeFunctionData("addMember", [owners[3].address]);
+        const addOwnerData = multisigInstance.interface.encodeFunctionData("addMember", [owner3.address]);
         const transactionId = await ContractUtils.getEventValueBigNumber(
             await multisigInstance
                 .connect(owners[0])
@@ -68,7 +68,7 @@ describe("MultiSigWallet", () => {
         const excludeExecuted = false;
         const includeExecuted = true;
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 1, includePending, excludeExecuted),
+            await multisigInstance.getTransactionIdsInCondition(0, 1, includePending, excludeExecuted, 0, 100),
             [BigNumber.from(transactionId)]
         );
 
@@ -88,22 +88,24 @@ describe("MultiSigWallet", () => {
         assert.ok(transactionId2 !== undefined);
 
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 2, includePending, excludeExecuted),
+            await multisigInstance.getTransactionIdsInCondition(0, 2, includePending, excludeExecuted, 0, 100),
             [BigNumber.from(transactionId), BigNumber.from(transactionId2)]
         );
 
         // Confirm change requirement transaction
-        await multisigInstance.connect(owners[1]).confirmTransaction(transactionId2);
+        const tx1 = await multisigInstance.connect(owners[1]).confirmTransaction(transactionId2);
+        await tx1.wait();
         assert.equal((await multisigInstance.getRequired()).toNumber(), newRequired);
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 1, excludePending, includeExecuted),
+            await multisigInstance.getTransactionIdsInCondition(0, 1, excludePending, includeExecuted, 0, 100),
             [BigNumber.from(transactionId2)]
         );
 
-        await multisigInstance.connect(owners[0]).executeTransaction(transactionId);
+        const tx2 = await multisigInstance.connect(owners[0]).executeTransaction(transactionId);
+        await tx2.wait();
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted),
-            [BigNumber.from(transactionId2), BigNumber.from(transactionId)]
+            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted, 0, 100),
+            [BigNumber.from(transactionId), BigNumber.from(transactionId2)]
         );
     });
 });

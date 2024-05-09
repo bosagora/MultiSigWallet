@@ -347,10 +347,18 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return number of transactions after filters are applied.
-    function getTransactionCountInCondition(bool _pending, bool _executed) external view override returns (uint256) {
+    function getTransactionCountInCondition(
+        bool _pending,
+        bool _executed,
+        uint256 _skip,
+        uint256 _limit
+    ) external view override returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < transactionCount; i++)
+        uint256 start = (transactionCount > _skip) ? _skip : transactionCount;
+        uint256 length = (transactionCount - start > _limit) ? _limit : transactionCount - start;
+        for (uint256 i = start; i < length; i++) {
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) count += 1;
+        }
         return count;
     }
 
@@ -387,18 +395,25 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256 _from,
         uint256 _to,
         bool _pending,
-        bool _executed
+        bool _executed,
+        uint256 _skip,
+        uint256 _limit
     ) external view override returns (uint256[] memory) {
         uint256[] memory transactionIdsTemp = new uint256[](transactionCount);
         uint256 count = 0;
         uint256 i;
-        for (i = 0; i < transactionCount; i++)
+        uint256 start = (transactionCount > _skip) ? _skip : transactionCount;
+        uint256 length = (transactionCount > start + _limit) ? _limit : transactionCount - start;
+        for (i = start; i < length; i++) {
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) {
                 transactionIdsTemp[count] = i;
                 count += 1;
             }
-        uint256[] memory values = new uint256[](_to - _from);
-        for (i = _from; i < _to; i++) values[i - _from] = transactionIdsTemp[i];
+        }
+        uint256 from = (_from <= count) ? _from : count;
+        uint256 to = (_to <= count) ? _to : count;
+        uint256[] memory values = new uint256[](to - from);
+        for (i = from; i < to; i++) values[i - from] = transactionIdsTemp[i];
         return values;
     }
 
