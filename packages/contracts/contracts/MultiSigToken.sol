@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./IMultiSigWallet.sol";
 
 contract MultiSigToken is ERC20 {
-    address public owner;
+    address public immutable owner;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only the owner can execute");
@@ -15,11 +15,11 @@ contract MultiSigToken is ERC20 {
     }
 
     constructor(address _owner) ERC20("Multi Sig Token", "MTK") {
-        owner = _owner;
         require(
-            IMultiSigWallet(owner).supportsInterface(type(IMultiSigWallet).interfaceId),
+            IMultiSigWallet(_owner).supportsInterface(type(IMultiSigWallet).interfaceId),
             "Invalid interface ID of multi sig wallet"
         );
+        owner = _owner;
     }
 
     function mint(uint256 _amount) external onlyOwner {
