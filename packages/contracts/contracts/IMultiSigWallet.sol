@@ -18,10 +18,10 @@ interface IMultiSigWallet is IERC165 {
         address[] approval;
     }
 
-    function getName() external view returns (string memory);
-    function getDescription() external view returns (string memory);
-    function getCreator() external view returns (address);
-    function getCreatedTime() external view returns (uint256);
+    function name() external view returns (string memory);
+    function description() external view returns (string memory);
+    function creator() external view returns (address);
+    function createdTime() external view returns (uint256);
 
     function getMembers() external view returns (address[] memory);
     function getRequired() external view returns (uint256);

@@ -76,11 +76,11 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
             address wallet = wallets[_creator][i];
             IMultiSigWallet msw = IMultiSigWallet(wallet);
             values[i - _from] = WalletInfo({
-                creator: msw.getCreator(),
+                creator: msw.creator(),
                 wallet: wallet,
-                name: msw.getName(),
-                description: msw.getDescription(),
-                createdTime: msw.getCreatedTime()
+                name: msw.name(),
+                description: msw.description(),
+                createdTime: msw.createdTime()
             });
         }
         return values;
@@ -93,11 +93,11 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         IMultiSigWallet msw = IMultiSigWallet(_wallet);
         return
             WalletInfo({
-                creator: msw.getCreator(),
+                creator: msw.creator(),
                 wallet: _wallet,
-                name: msw.getName(),
-                description: msw.getDescription(),
-                createdTime: msw.getCreatedTime()
+                name: msw.name(),
+                description: msw.description(),
+                createdTime: msw.createdTime()
             });
     }
 
@@ -154,11 +154,11 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
             address wallet = walletsForOwnerValues[_member][i];
             IMultiSigWallet msw = IMultiSigWallet(wallet);
             values[i - _from] = WalletInfo({
-                creator: msw.getCreator(),
+                creator: msw.creator(),
                 wallet: wallet,
-                name: msw.getName(),
-                description: msw.getDescription(),
-                createdTime: msw.getCreatedTime()
+                name: msw.name(),
+                description: msw.description(),
+                createdTime: msw.createdTime()
             });
         }
         return values;

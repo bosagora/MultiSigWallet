@@ -429,7 +429,7 @@ describe("Test for MultiSigWalletFactory 3", () => {
         // Check that transaction has been executed
         assert.deepStrictEqual(transactionId, executedTransactionId);
 
-        assert.deepStrictEqual(await multiSigWallet1.getName(), walletInfos[1].name);
-        assert.deepStrictEqual(await multiSigWallet1.getDescription(), walletInfos[1].description);
+        assert.deepStrictEqual(await multiSigWallet1.name(), walletInfos[1].name);
+        assert.deepStrictEqual(await multiSigWallet1.description(), walletInfos[1].description);
     });
 });
