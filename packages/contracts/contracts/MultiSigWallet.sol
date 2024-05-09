@@ -31,10 +31,10 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Storage
      */
-    string public name;
-    string public description;
-    address public creator;
-    uint256 public createdTime;
+    string public override name;
+    string public override description;
+    address public override creator;
+    uint256 public override createdTime;
 
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
@@ -431,21 +431,5 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @dev Returns is owner
     function isOwner(address _address) external view override returns (bool) {
         return memberMap[_address];
-    }
-
-    function getName() external view override returns (string memory) {
-        return name;
-    }
-
-    function getDescription() external view override returns (string memory) {
-        return description;
-    }
-
-    function getCreator() external view override returns (address) {
-        return creator;
-    }
-
-    function getCreatedTime() external view override returns (uint256) {
-        return createdTime;
     }
 }
