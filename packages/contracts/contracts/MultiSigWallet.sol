@@ -33,8 +33,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
      */
     string public override name;
     string public override description;
-    address public override creator;
-    uint256 public override createdTime;
+    address public immutable override creator;
+    uint256 public immutable override createdTime;
 
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
@@ -42,7 +42,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     address[] internal members;
     uint256 internal required;
     uint256 internal transactionCount;
-    address internal factoryAddress;
+    address internal immutable factoryAddress;
 
     /*
      *  Modifiers
