@@ -35,9 +35,10 @@ async function deployMultiSigWallet(
         "wallet"
     );
 
-    if (address !== undefined)
+    if (address !== undefined) {
+        await factoryContract.register(address);
         return (await ethers.getContractFactory("MultiSigWallet")).attach(address) as MultiSigWallet;
-    else return undefined;
+    } else return undefined;
 }
 
 describe("Test for MultiSigWalletFactory", () => {
