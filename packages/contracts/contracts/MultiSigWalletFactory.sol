@@ -109,17 +109,28 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         _;
     }
 
+    modifier onlyRegisteredWallet(address _wallet) {
+        require(hasWallets[_wallet]);
+        _;
+    }
+
     /// @dev Add a new owner on wallet
     /// @param _member Address of new owner.
     /// @param _member Address of wallet.
-    function addMember(address _member, address _wallet) external override onlyWallet(_wallet) {
+    function addMember(
+        address _member,
+        address _wallet
+    ) external override onlyWallet(_wallet) onlyRegisteredWallet(_wallet) {
         _addMember(_member, _wallet);
     }
 
     /// @dev Remove a new owner on wallet
     /// @param _member Address of removed owner.
     /// @param _member Address of wallet.
-    function removeMember(address _member, address _wallet) external override onlyWallet(_wallet) {
+    function removeMember(
+        address _member,
+        address _wallet
+    ) external override onlyWallet(_wallet) onlyRegisteredWallet(_wallet) {
         _removeMember(_member, _wallet);
     }
 
