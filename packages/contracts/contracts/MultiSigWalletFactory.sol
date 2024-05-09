@@ -14,6 +14,7 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      *  Events
      */
     event ContractInstantiation(address sender, address wallet);
+    event Registered(address wallet);
     event ChangedName(address wallet, string name);
     event ChangedDescription(address wallet, string description);
 
@@ -41,11 +42,28 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         address wallet = address(
             new MultiSigWallet(address(this), _name, _description, msg.sender, _owners, _required)
         );
-        for (uint256 idx = 0; idx < _owners.length; idx++) {
-            _addMember(_owners[idx], wallet);
-        }
-        register(wallet);
+
+        emit ContractInstantiation(msg.sender, wallet);
+
         return wallet;
+    }
+
+    /// @dev Registers contract in factory registry.
+    /// @param _wallet Address of contract instantiation.
+    function register(address payable _wallet) external override onlyNotRegisteredWallet(_wallet) {
+        require(
+            IMultiSigWallet(_wallet).supportsInterface(type(IMultiSigWallet).interfaceId),
+            "Invalid interface ID of multi sig wallet"
+        );
+        MultiSigWallet msw = MultiSigWallet(_wallet);
+        address[] memory members = msw.getMembers();
+        for (uint256 idx = 0; idx < members.length; idx++) {
+            _addMember(members[idx], _wallet);
+        }
+        hasWallets[_wallet] = true;
+        wallets[msg.sender].push(_wallet);
+
+        emit Registered(_wallet);
     }
 
     /**
@@ -114,6 +132,11 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         _;
     }
 
+    modifier onlyNotRegisteredWallet(address _wallet) {
+        require(!hasWallets[_wallet]);
+        _;
+    }
+
     /// @dev Add a new owner on wallet
     /// @param _member Address of new owner.
     /// @param _member Address of wallet.
@@ -167,13 +190,6 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     /*
      * Internal functions
      */
-    /// @dev Registers contract in factory registry.
-    /// @param _wallet Address of contract instantiation.
-    function register(address _wallet) internal {
-        hasWallets[_wallet] = true;
-        wallets[msg.sender].push(_wallet);
-        emit ContractInstantiation(msg.sender, _wallet);
-    }
 
     /// @dev Add a new owner on wallet
     /// @param _member Address of new owner.
