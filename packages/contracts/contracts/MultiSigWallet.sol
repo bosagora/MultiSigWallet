@@ -169,7 +169,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         address _member,
         address _newOwner
     ) public onlyWallet memberExists(_member) memberDoesNotExist(_newOwner) notNull(_newOwner) {
-        for (uint256 i = 0; i < members.length; i++)
+        uint256 length = members.length;
+        for (uint256 i = 0; i < length; i++)
             if (members[i] == _member) {
                 members[i] = _newOwner;
                 break;
@@ -290,7 +291,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @return confirmation status.
     function isConfirmed(uint256 _transactionId) public view returns (bool) {
         uint256 count = 0;
-        for (uint256 i = 0; i < members.length; i++) {
+        uint256 length = members.length;
+        for (uint256 i = 0; i < length; i++) {
             if (confirmations[_transactionId][members[i]]) count += 1;
             if (count == required) return true;
         }
@@ -339,7 +341,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /// @return number of confirmations.
     function getConfirmationCount(uint256 _transactionId) external view override returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < members.length; i++) if (confirmations[_transactionId][members[i]]) count += 1;
+        uint256 length = members.length;
+        for (uint256 i = 0; i < length; i++) if (confirmations[_transactionId][members[i]]) count += 1;
         return count;
     }
 
@@ -375,7 +378,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         address[] memory confirmationsTemp = new address[](members.length);
         uint256 count = 0;
         uint256 i;
-        for (i = 0; i < members.length; i++)
+        uint256 length = members.length;
+        for (i = 0; i < length; i++)
             if (confirmations[_transactionId][members[i]]) {
                 confirmationsTemp[count] = members[i];
                 count += 1;
