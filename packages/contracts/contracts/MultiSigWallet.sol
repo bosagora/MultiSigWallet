@@ -26,7 +26,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Constants
      */
-    uint256 public MAX_OWNER_COUNT = 50;
+    uint256 public constant MAX_OWNER_COUNT = 50;
 
     /*
      *  Storage
