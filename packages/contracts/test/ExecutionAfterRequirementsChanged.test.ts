@@ -68,7 +68,7 @@ describe("MultiSigWallet", () => {
         const excludeExecuted = false;
         const includeExecuted = true;
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 1, includePending, excludeExecuted, 0, 100),
+            await multisigInstance.getTransactionIdsInCondition(0, 1, includePending, excludeExecuted),
             [BigNumber.from(transactionId)]
         );
 
@@ -88,7 +88,7 @@ describe("MultiSigWallet", () => {
         assert.ok(transactionId2 !== undefined);
 
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 2, includePending, excludeExecuted, 0, 100),
+            await multisigInstance.getTransactionIdsInCondition(0, 2, includePending, excludeExecuted),
             [BigNumber.from(transactionId), BigNumber.from(transactionId2)]
         );
 
@@ -97,14 +97,14 @@ describe("MultiSigWallet", () => {
         await tx1.wait();
         assert.equal((await multisigInstance.getRequired()).toNumber(), newRequired);
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 1, excludePending, includeExecuted, 0, 100),
+            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted),
             [BigNumber.from(transactionId2)]
         );
 
         const tx2 = await multisigInstance.connect(owners[0]).executeTransaction(transactionId);
         await tx2.wait();
         assert.deepStrictEqual(
-            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted, 0, 100),
+            await multisigInstance.getTransactionIdsInCondition(0, 2, excludePending, includeExecuted),
             [BigNumber.from(transactionId), BigNumber.from(transactionId2)]
         );
     });
