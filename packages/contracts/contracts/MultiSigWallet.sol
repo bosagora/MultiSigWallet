@@ -27,6 +27,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
      *  Constants
      */
     uint256 public constant MAX_OWNER_COUNT = 50;
+    uint256 constant MAX_LOOP_ITERATION = 1000;
 
     /*
      *  Storage
@@ -390,14 +391,19 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         _to = (_to < transactionCount) ? _to : transactionCount; // Adjust _to if it's greater than transactionCount
         require(_from < _to, "Invalid range");
 
-        uint256[] memory transactionIdsTemp = new uint256[](_to - _from);
+        // Limit the loop bounds to avoid potential out-of-gas exception
+        uint256 loopTo = (_to - _from > MAX_LOOP_ITERATION) ? _from + MAX_LOOP_ITERATION : _to;
+
+        uint256[] memory transactionIdsTemp = new uint256[](loopTo - _from);
         uint256 count = 0;
-        for (uint256 i = _from; i < _to; i++) {
+        for (uint256 i = _from; i < loopTo; i++) {
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) {
                 transactionIdsTemp[count] = i;
                 count++;
             }
         }
+
+        // Resize the transactionIdsTemp array to remove any unused slots
         uint256[] memory values = new uint256[](count);
         for (uint256 i = 0; i < count; i++) {
             values[i] = transactionIdsTemp[i];
