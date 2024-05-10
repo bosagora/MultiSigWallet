@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./IMultiSigWallet.sol";
 
-contract TestMultiSigToken is ERC20 {
+contract MultiSigToken is ERC20 {
     address public immutable owner;
 
     modifier onlyOwner() {
