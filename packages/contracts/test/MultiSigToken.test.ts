@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import { ethers } from "hardhat";
 
 import { HardhatAccount } from "../src/HardhatAccount";
-import { MultiSigToken, MultiSigWallet, MultiSigWalletFactory } from "../typechain-types";
+import { MultiSigWallet, TestMultiSigToken } from "../typechain-types";
 
 import assert from "assert";
 import { BigNumber, Wallet } from "ethers";
@@ -11,41 +11,23 @@ import { ContractUtils } from "../src/utils/ContractUtils";
 
 import { expect } from "chai";
 
-async function deployMultiSigWalletFactory(deployer: Wallet): Promise<MultiSigWalletFactory> {
-    const factory = await ethers.getContractFactory("MultiSigWalletFactory");
-    const contract = (await factory.connect(deployer).deploy()) as MultiSigWalletFactory;
-    await contract.deployed();
-    await contract.deployTransaction.wait();
-    return contract;
-}
-
 async function deployMultiSigWallet(
-    factoryAddress: string,
     deployer: Wallet,
     name: string,
     description: string,
     owners: string[],
     required: number
 ): Promise<MultiSigWallet | undefined> {
-    const contractFactory = await ethers.getContractFactory("MultiSigWalletFactory");
-    const factoryContract = contractFactory.attach(factoryAddress) as MultiSigWalletFactory;
-
-    const address = await ContractUtils.getEventValueString(
-        await factoryContract.connect(deployer).create(name, description, owners, required),
-        factoryContract.interface,
-        "ContractInstantiation",
-        "wallet"
-    );
-
-    if (address !== undefined) {
-        await factoryContract.register(address);
-        return (await ethers.getContractFactory("MultiSigWallet")).attach(address) as MultiSigWallet;
-    } else return undefined;
+    const factory = await ethers.getContractFactory("MultiSigWallet");
+    const contract = (await factory.connect(deployer).deploy(name, description, owners, required)) as MultiSigWallet;
+    await contract.deployed();
+    await contract.deployTransaction.wait();
+    return contract;
 }
 
-async function deployToken(deployer: Wallet, owner: string): Promise<MultiSigToken> {
-    const factory = await ethers.getContractFactory("MultiSigToken");
-    const contract = (await factory.connect(deployer).deploy(owner)) as MultiSigToken;
+async function deployToken(deployer: Wallet, owner: string): Promise<TestMultiSigToken> {
+    const factory = await ethers.getContractFactory("TestMultiSigToken");
+    const contract = (await factory.connect(deployer).deploy(owner)) as TestMultiSigToken;
     await contract.deployed();
     await contract.deployTransaction.wait();
     return contract;
@@ -56,19 +38,12 @@ describe("Test for MultiSigWalletFactory", () => {
     const [deployer, account0, account1, account2, account3, account4] = raws;
     const owners1 = [account0, account1, account2];
 
-    let multiSigFactory: MultiSigWalletFactory;
     let multiSigWallet: MultiSigWallet | undefined;
-    let multiSigToken: MultiSigToken;
+    let multiSigToken: TestMultiSigToken;
     const requiredConfirmations = 2;
-
-    before(async () => {
-        multiSigFactory = await deployMultiSigWalletFactory(deployer);
-        assert.ok(multiSigFactory);
-    });
 
     it("Create Wallet by Factory", async () => {
         multiSigWallet = await deployMultiSigWallet(
-            multiSigFactory.address,
             deployer,
             "My Wallet 1",
             "My first multi-sign wallet",
@@ -81,14 +56,10 @@ describe("Test for MultiSigWalletFactory", () => {
             await multiSigWallet.getMembers(),
             owners1.map((m) => m.address)
         );
-
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account1.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account2.address), BigNumber.from(1));
     });
 
     it("Create Token, Owner is wallet", async () => {
-        const factory = await ethers.getContractFactory("MultiSigToken");
+        const factory = await ethers.getContractFactory("TestMultiSigToken");
         await expect(factory.connect(deployer).deploy(account0.address)).to.be.revertedWith(
             "function call to a non-contract account"
         );
@@ -192,19 +163,12 @@ describe("Test for MultiSigWalletFactory 2", () => {
     const [deployer, account0, account1, account2, account3, account4, account5] = raws;
     const owners1 = [account0, account1, account2, account3, account4];
 
-    let multiSigFactory: MultiSigWalletFactory;
     let multiSigWallet: MultiSigWallet | undefined;
-    let multiSigToken: MultiSigToken;
+    let multiSigToken: TestMultiSigToken;
     const requiredConfirmations = 3;
-
-    before(async () => {
-        multiSigFactory = await deployMultiSigWalletFactory(deployer);
-        assert.ok(multiSigFactory);
-    });
 
     it("Create Wallet by Factory", async () => {
         multiSigWallet = await deployMultiSigWallet(
-            multiSigFactory.address,
             deployer,
             "My Wallet 1",
             "My first multi-sign wallet",
@@ -217,14 +181,10 @@ describe("Test for MultiSigWalletFactory 2", () => {
             await multiSigWallet.getMembers(),
             owners1.map((m) => m.address)
         );
-
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account1.address), BigNumber.from(1));
-        assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account2.address), BigNumber.from(1));
     });
 
     it("Create Token, Owner is wallet", async () => {
-        const factory = await ethers.getContractFactory("MultiSigToken");
+        const factory = await ethers.getContractFactory("TestMultiSigToken");
         await expect(factory.connect(deployer).deploy(account0.address)).to.be.revertedWith(
             "function call to a non-contract account"
         );

@@ -5,7 +5,6 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./IMultiSigWallet.sol";
-import "./IMultiSigWalletFactory.sol";
 
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
@@ -13,6 +12,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      *  Events
      */
+    event Contraction(address sender, address wallet);
     event Confirmation(address indexed sender, uint256 indexed transactionId);
     event Revocation(address indexed sender, uint256 indexed transactionId);
     event Submission(uint256 indexed transactionId);
@@ -42,7 +42,6 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     address[] internal members;
     uint256 internal required;
     uint256 internal transactionCount;
-    address internal immutable factoryAddress;
 
     /*
      *  Modifiers
@@ -96,25 +95,18 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
      * Public functions
      */
     /// @dev Contract constructor sets initial members and required number of confirmations.
-    /// @param _factory MultiSigWalletFactory.
+    /// @param _name Name of wallet
+    /// @param _description Description of wallet
     /// @param _members List of initial members.
     /// @param _required Number of required confirmations.
-    constructor(
-        address _factory,
-        string memory _name,
-        string memory _description,
-        address _creator,
-        address[] memory _members,
-        uint256 _required
-    ) {
+    constructor(string memory _name, string memory _description, address[] memory _members, uint256 _required) {
         require(
             _members.length <= MAX_OWNER_COUNT && _required <= _members.length && _required != 0 && _members.length != 0
         );
 
-        factoryAddress = _factory;
         name = _name;
         description = _description;
-        creator = _creator;
+        creator = msg.sender;
         createdTime = block.timestamp;
 
         for (uint256 i = 0; i < _members.length; i++) {
@@ -123,6 +115,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         }
         members = _members;
         required = _required;
+
+        emit Contraction(msg.sender, address(this));
     }
 
     /**
@@ -143,7 +137,6 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     ) public onlyWallet memberDoesNotExist(_member) notNull(_member) validRequirement(members.length + 1, required) {
         memberMap[_member] = true;
         members.push(_member);
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addMember(_member, address(this));
         emit OwnerAddition(_member);
     }
 
@@ -157,7 +150,6 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
                 break;
             }
         members.pop();
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeMember(_member, address(this));
         if (required > members.length) changeRequirement(members.length);
         emit OwnerRemoval(_member);
     }
@@ -177,8 +169,6 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
             }
         memberMap[_member] = false;
         memberMap[_newOwner] = true;
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).removeMember(_member, address(this));
-        if (factoryAddress != address(0)) IMultiSigWalletFactory(factoryAddress).addMember(_newOwner, address(this));
         emit OwnerRemoval(_member);
         emit OwnerAddition(_newOwner);
     }
