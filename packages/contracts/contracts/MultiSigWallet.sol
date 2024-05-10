@@ -336,21 +336,16 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         return count;
     }
 
-    /// @dev Returns total number of transactions after filers are applied.
+    /// @dev Returns total number of transactions after filters are applied.
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return number of transactions after filters are applied.
-    function getTransactionCountInCondition(
-        bool _pending,
-        bool _executed,
-        uint256 _skip,
-        uint256 _limit
-    ) external view override returns (uint256) {
+    function getTransactionCountInCondition(bool _pending, bool _executed) external view override returns (uint256) {
         uint256 count = 0;
-        uint256 start = (transactionCount > _skip) ? _skip : transactionCount;
-        uint256 length = (transactionCount - start > _limit) ? _limit : transactionCount - start;
-        for (uint256 i = start; i < length; i++) {
-            if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) count += 1;
+        for (uint256 i = 0; i < transactionCount; i++) {
+            if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) {
+                count++;
+            }
         }
         return count;
     }
@@ -389,25 +384,24 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256 _from,
         uint256 _to,
         bool _pending,
-        bool _executed,
-        uint256 _skip,
-        uint256 _limit
+        bool _executed
     ) external view override returns (uint256[] memory) {
-        uint256[] memory transactionIdsTemp = new uint256[](transactionCount);
+        require(_from < transactionCount, "_from is out of range");
+        _to = (_to < transactionCount) ? _to : transactionCount; // Adjust _to if it's greater than transactionCount
+        require(_from < _to, "Invalid range");
+
+        uint256[] memory transactionIdsTemp = new uint256[](_to - _from);
         uint256 count = 0;
-        uint256 i;
-        uint256 start = (transactionCount > _skip) ? _skip : transactionCount;
-        uint256 length = (transactionCount > start + _limit) ? _limit : transactionCount - start;
-        for (i = start; i < length; i++) {
+        for (uint256 i = _from; i < _to; i++) {
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) {
                 transactionIdsTemp[count] = i;
-                count += 1;
+                count++;
             }
         }
-        uint256 from = (_from <= count) ? _from : count;
-        uint256 to = (_to <= count) ? _to : count;
-        uint256[] memory values = new uint256[](to - from);
-        for (i = from; i < to; i++) values[i - from] = transactionIdsTemp[i];
+        uint256[] memory values = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            values[i] = transactionIdsTemp[i];
+        }
         return values;
     }
 
