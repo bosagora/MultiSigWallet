@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-waffle";
 import { ethers } from "hardhat";
 
 import { HardhatAccount } from "../src/HardhatAccount";
-import { MultiSigToken, MultiSigWallet, MultiSigWalletFactory } from "../typechain-types";
+import { MultiSigWallet, MultiSigWalletFactory, TestMultiSigToken } from "../typechain-types";
 
 import assert from "assert";
 import { BigNumber, Wallet } from "ethers";
@@ -43,9 +43,9 @@ async function deployMultiSigWallet(
     } else return undefined;
 }
 
-async function deployToken(deployer: Wallet, owner: string): Promise<MultiSigToken> {
-    const factory = await ethers.getContractFactory("MultiSigToken");
-    const contract = (await factory.connect(deployer).deploy(owner)) as MultiSigToken;
+async function deployToken(deployer: Wallet, owner: string): Promise<TestMultiSigToken> {
+    const factory = await ethers.getContractFactory("TestMultiSigToken");
+    const contract = (await factory.connect(deployer).deploy(owner)) as TestMultiSigToken;
     await contract.deployed();
     await contract.deployTransaction.wait();
     return contract;
@@ -58,7 +58,7 @@ describe("Test for MultiSigWalletFactory", () => {
 
     let multiSigFactory: MultiSigWalletFactory;
     let multiSigWallet: MultiSigWallet | undefined;
-    let multiSigToken: MultiSigToken;
+    let multiSigToken: TestMultiSigToken;
     const requiredConfirmations = 2;
 
     before(async () => {
@@ -88,7 +88,7 @@ describe("Test for MultiSigWalletFactory", () => {
     });
 
     it("Create Token, Owner is wallet", async () => {
-        const factory = await ethers.getContractFactory("MultiSigToken");
+        const factory = await ethers.getContractFactory("TestMultiSigToken");
         await expect(factory.connect(deployer).deploy(account0.address)).to.be.revertedWith(
             "function call to a non-contract account"
         );
@@ -194,7 +194,7 @@ describe("Test for MultiSigWalletFactory 2", () => {
 
     let multiSigFactory: MultiSigWalletFactory;
     let multiSigWallet: MultiSigWallet | undefined;
-    let multiSigToken: MultiSigToken;
+    let multiSigToken: TestMultiSigToken;
     const requiredConfirmations = 3;
 
     before(async () => {
@@ -224,7 +224,7 @@ describe("Test for MultiSigWalletFactory 2", () => {
     });
 
     it("Create Token, Owner is wallet", async () => {
-        const factory = await ethers.getContractFactory("MultiSigToken");
+        const factory = await ethers.getContractFactory("TestMultiSigToken");
         await expect(factory.connect(deployer).deploy(account0.address)).to.be.revertedWith(
             "function call to a non-contract account"
         );
