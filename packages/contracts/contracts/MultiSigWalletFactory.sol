@@ -15,8 +15,6 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      */
     event ContractInstantiation(address sender, address wallet);
     event Registered(address wallet);
-    event ChangedName(address wallet, string name);
-    event ChangedDescription(address wallet, string description);
 
     /*
      *  Storage
@@ -28,19 +26,19 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
      * Public functions
      */
     /// @dev Allows verified creation of multi-signature wallet.
-    /// @param _name List of initial owners.
-    /// @param _description List of initial owners.
-    /// @param _owners List of initial owners.
+    /// @param _name Name of multi-signature wallet.
+    /// @param _description Description of multi-signature wallet.
+    /// @param _members List of initial members.
     /// @param _required Number of required confirmations.
     /// @return wallet address.
     function create(
         string calldata _name,
         string calldata _description,
-        address[] memory _owners,
+        address[] memory _members,
         uint256 _required
     ) external override returns (address) {
         address wallet = address(
-            new MultiSigWallet(address(this), _name, _description, msg.sender, _owners, _required)
+            new MultiSigWallet(address(this), _name, _description, msg.sender, _members, _required)
         );
 
         emit ContractInstantiation(msg.sender, wallet);
