@@ -29,14 +29,13 @@ async function deployMultiSigWallet(
     const factoryContract = contractFactory.attach(factoryAddress) as MultiSigWalletFactory;
 
     const address = await ContractUtils.getEventValueString(
-        await factoryContract.connect(deployer).create(name, description, owners, required),
+        await factoryContract.connect(deployer).create(name, description, owners, required, { gasLimit: 4000000 }),
         factoryContract.interface,
         "ContractInstantiation",
         "wallet"
     );
 
     if (address !== undefined) {
-        await factoryContract.register(address);
         return (await ethers.getContractFactory("MultiSigWallet")).attach(address) as MultiSigWallet;
     } else return undefined;
 }
@@ -73,7 +72,7 @@ describe("Test for MultiSigWalletFactory", () => {
         },
     ];
 
-    before(async () => {
+    it("deploy MultiSigWalletFactory", async () => {
         multiSigFactory = await deployMultiSigWalletFactory(deployer);
         assert.ok(multiSigFactory);
     });

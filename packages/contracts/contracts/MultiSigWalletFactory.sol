@@ -37,31 +37,34 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         address[] memory _members,
         uint256 _required
     ) external override returns (address) {
-        address wallet = address(
-            new MultiSigWallet(address(this), _name, _description, msg.sender, _members, _required)
-        );
-
-        emit ContractInstantiation(msg.sender, wallet);
-
-        return wallet;
-    }
-
-    /// @dev Registers contract in factory registry.
-    /// @param _wallet Address of contract instantiation.
-    function register(address payable _wallet) external override onlyNotRegisteredWallet(_wallet) {
-        require(
-            IMultiSigWallet(_wallet).supportsInterface(type(IMultiSigWallet).interfaceId),
-            "Invalid interface ID of multi sig wallet"
-        );
-        MultiSigWallet msw = MultiSigWallet(_wallet);
-        address[] memory members = msw.getMembers();
-        for (uint256 idx = 0; idx < members.length; idx++) {
-            _addMember(members[idx], _wallet);
+        bytes32 salt = keccak256(abi.encodePacked(msg.sender, block.number));
+        address wallet;
+        assembly {
+            let size := calldatasize()
+            let data := mload(0x40)
+            mstore(0x40, add(data, size))
+            mstore(data, size)
+            calldatacopy(add(data, 0x20), 0, size)
+            salt := keccak256(add(data, 0x20), size)
+            wallet := create2(0, data, size, salt)
         }
-        hasWallets[_wallet] = true;
-        wallets[msg.sender].push(_wallet);
+        require(wallet != address(0), "Failed to create wallet");
 
-        emit Registered(_wallet);
+        MultiSigWallet walletContract;
+        bytes memory bytecode = type(MultiSigWallet).creationCode;
+        assembly {
+            walletContract := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+        }
+        address walletAddress = address(walletContract);
+
+        // 생성된 월렛 초기화 및 멤버 추가
+        walletContract.initialize(address(this), _name, _description, msg.sender, _members, _required);
+        for (uint256 idx = 0; idx < _members.length; idx++) {
+            _addMember(_members[idx], walletAddress);
+        }
+        register(walletAddress);
+
+        return walletAddress;
     }
 
     /**
@@ -130,11 +133,6 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         _;
     }
 
-    modifier onlyNotRegisteredWallet(address _wallet) {
-        require(!hasWallets[_wallet]);
-        _;
-    }
-
     /// @dev Add a new owner on wallet
     /// @param _member Address of new owner.
     /// @param _member Address of wallet.
@@ -188,6 +186,14 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     /*
      * Internal functions
      */
+
+    /// @dev Registers contract in factory registry.
+    /// @param _wallet Address of contract instantiation.
+    function register(address _wallet) internal {
+        hasWallets[_wallet] = true;
+        wallets[msg.sender].push(_wallet);
+        emit ContractInstantiation(msg.sender, _wallet);
+    }
 
     /// @dev Add a new owner on wallet
     /// @param _member Address of new owner.

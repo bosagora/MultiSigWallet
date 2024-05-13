@@ -34,8 +34,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
      */
     string public override name;
     string public override description;
-    address public immutable override creator;
-    uint256 public immutable override createdTime;
+    address public override creator;
+    uint256 public override createdTime;
 
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
@@ -43,7 +43,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     address[] internal members;
     uint256 internal required;
     uint256 internal transactionCount;
-    address internal immutable factoryAddress;
+    address internal factoryAddress;
 
     /*
      *  Modifiers
@@ -96,18 +96,14 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
      * Public functions
      */
-    /// @dev Contract constructor sets initial members and required number of confirmations.
-    /// @param _factory MultiSigWalletFactory.
-    /// @param _members List of initial members.
-    /// @param _required Number of required confirmations.
-    constructor(
+    function initialize(
         address _factory,
         string memory _name,
         string memory _description,
         address _creator,
         address[] memory _members,
         uint256 _required
-    ) {
+    ) public {
         require(
             _members.length <= MAX_OWNER_COUNT && _required <= _members.length && _required != 0 && _members.length != 0
         );
@@ -121,8 +117,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         for (uint256 i = 0; i < _members.length; i++) {
             require(!memberMap[_members[i]] && _members[i] != address(0));
             memberMap[_members[i]] = true;
+            members.push(_members[i]);
         }
-        members = _members;
         required = _required;
     }
 
