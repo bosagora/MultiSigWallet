@@ -368,12 +368,26 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     }
 
     /// @dev Returns total number of transactions after filters are applied.
+    /// @param _from Index start position of transaction array.
+    /// @param _to Index end position of transaction array.
     /// @param _pending Include pending transactions.
     /// @param _executed Include executed transactions.
     /// @return number of transactions after filters are applied.
-    function getTransactionCountInCondition(bool _pending, bool _executed) external view override returns (uint256) {
+    function getTransactionCountInCondition(
+        uint256 _from,
+        uint256 _to,
+        bool _pending,
+        bool _executed
+    ) external view override returns (uint256) {
+        require(_from < transactionCount, "_from is out of range");
+        _to = (_to < transactionCount) ? _to : transactionCount; // Adjust _to if it's greater than transactionCount
+        require(_from < _to, "Invalid range");
+
+        // Limit the loop bounds to avoid potential out-of-gas exception
+        uint256 loopTo = (_to - _from > MAX_LOOP_ITERATION) ? _from + MAX_LOOP_ITERATION : _to;
+
         uint256 count = 0;
-        for (uint256 i = 0; i < transactionCount; i++) {
+        for (uint256 i = _from; i < loopTo; i++) {
             if ((_pending && !transactions[i].executed) || (_executed && transactions[i].executed)) {
                 count++;
             }
