@@ -18,7 +18,6 @@ interface IMultiSigWalletFactory is IERC165 {
         address[] memory _owners,
         uint256 _required
     ) external returns (address);
-    function register(address payable _wallet) external;
     function getNumberOfWalletsForCreator(address _creator) external view returns (uint256);
     function getWalletsForCreator(
         address _creator,
