@@ -228,7 +228,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
                 revert(0, 0)
             }
             // Load the first 4 bytes of _data (the selector) into the selector variable
-            selector := calldataload(0)
+            selector := calldataload(4)
         }
 
         // Check if data is not calling addMember or removeMember function of MultiSigWalletFactory
