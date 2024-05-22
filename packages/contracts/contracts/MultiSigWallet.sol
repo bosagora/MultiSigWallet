@@ -44,6 +44,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     uint256 internal required;
     uint256 internal transactionCount;
     address internal factoryAddress;
+    bool internal initialized;
 
     /*
      *  Modifiers
@@ -93,6 +94,10 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         _;
     }
 
+    constructor() {
+        initialized = false;
+    }
+
     /*
      * Public functions
      */
@@ -104,6 +109,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         address[] memory _members,
         uint256 _required
     ) public {
+        require(!initialized, "Already initialized");
+        require(msg.sender == _factory, "Sender is not authorized");
         require(
             _members.length <= MAX_OWNER_COUNT && _required <= _members.length && _required != 0 && _members.length != 0
         );
@@ -120,6 +127,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
             members.push(_members[i]);
         }
         required = _required;
+        initialized = true;
     }
 
     /**
