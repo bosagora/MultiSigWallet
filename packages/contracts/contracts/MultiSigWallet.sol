@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IMultiSigWallet.sol";
 import "./IMultiSigWalletFactory.sol";
 
-/// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
+/// @title Multi-Signature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
 contract MultiSigWallet is ERC165, IMultiSigWallet {
     /*
@@ -34,8 +34,8 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
      */
     string public override name;
     string public override description;
-    address public override creator;
-    uint256 public override createdTime;
+    address public immutable override creator;
+    uint256 public immutable override createdTime;
 
     mapping(uint256 => Transaction) internal transactions;
     mapping(uint256 => mapping(address => bool)) internal confirmations;
@@ -43,8 +43,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
     address[] internal members;
     uint256 internal required;
     uint256 internal transactionCount;
-    address internal factoryAddress;
-    bool internal initialized;
+    address internal immutable factoryAddress;
 
     /*
      *  Modifiers
@@ -94,23 +93,14 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         _;
     }
 
-    constructor() {
-        initialized = false;
-    }
-
-    /*
-     * Public functions
-     */
-    function initialize(
+    constructor(
         address _factory,
         string memory _name,
         string memory _description,
         address _creator,
         address[] memory _members,
         uint256 _required
-    ) public {
-        require(!initialized, "Already initialized");
-        require(msg.sender == _factory, "Sender is not authorized");
+    ) {
         require(
             _members.length <= MAX_OWNER_COUNT && _required <= _members.length && _required != 0 && _members.length != 0
         );
@@ -127,7 +117,6 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
             members.push(_members[i]);
         }
         required = _required;
-        initialized = true;
     }
 
     /**
