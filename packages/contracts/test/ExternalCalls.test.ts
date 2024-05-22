@@ -12,10 +12,11 @@ import { BigNumber, Wallet } from "ethers";
 
 async function deployMultiSigWallet(deployer: Wallet, owners: string[], required: number): Promise<MultiSigWallet> {
     const factory = await ethers.getContractFactory("MultiSigWallet");
-    const contract = (await factory.connect(deployer).deploy()) as MultiSigWallet;
+    const contract = (await factory
+        .connect(deployer)
+        .deploy(deployer.address, "name", "description", deployer.address, owners, required)) as MultiSigWallet;
     await contract.deployed();
     await contract.deployTransaction.wait();
-    await contract.initialize(deployer.address, "name", "description", deployer.address, owners, required);
     return contract;
 }
 

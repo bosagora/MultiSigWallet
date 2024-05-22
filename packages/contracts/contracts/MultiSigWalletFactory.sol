@@ -40,19 +40,20 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
         uint256 _seed
     ) external override returns (address) {
         bytes32 salt = keccak256(abi.encodePacked(msg.sender, _seed));
-        MultiSigWallet walletContract;
-        bytes memory bytecode = type(MultiSigWallet).creationCode;
-        assembly {
-            walletContract := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
-        }
-        require(address(walletContract) != address(0), "Failed to create wallet");
+        MultiSigWallet walletContract = new MultiSigWallet{ salt: salt }(
+            address(this),
+            _name,
+            _description,
+            msg.sender,
+            _members,
+            _required
+        );
         address walletAddress = address(walletContract);
 
-        // 생성된 월렛 초기화 및 멤버 추가
-        walletContract.initialize(address(this), _name, _description, msg.sender, _members, _required);
         for (uint256 idx = 0; idx < _members.length; idx++) {
             _addMember(_members[idx], walletAddress);
         }
+
         register(walletAddress);
 
         return walletAddress;
