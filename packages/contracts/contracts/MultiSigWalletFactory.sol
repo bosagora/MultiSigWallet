@@ -30,14 +30,16 @@ contract MultiSigWalletFactory is ERC165, IMultiSigWalletFactory {
     /// @param _description Description of multi-signature wallet.
     /// @param _members List of initial members.
     /// @param _required Number of required confirmations.
+    /// @param _seed Used to calculate a salt when creating a contract
     /// @return wallet address.
     function create(
         string calldata _name,
         string calldata _description,
         address[] memory _members,
-        uint256 _required
+        uint256 _required,
+        uint256 _seed
     ) external override returns (address) {
-        bytes32 salt = keccak256(abi.encodePacked(msg.sender, block.number));
+        bytes32 salt = keccak256(abi.encodePacked(msg.sender, _seed));
         MultiSigWallet walletContract;
         bytes memory bytecode = type(MultiSigWallet).creationCode;
         assembly {
