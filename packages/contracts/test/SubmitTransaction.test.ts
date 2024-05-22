@@ -23,13 +23,14 @@ async function deployMultiSigWallet(
     name: string,
     description: string,
     owners: string[],
-    required: number
+    required: number,
+    seed: BigNumber
 ): Promise<MultiSigWallet | undefined> {
     const contractFactory = await ethers.getContractFactory("MultiSigWalletFactory");
     const factoryContract = contractFactory.attach(factoryAddress) as MultiSigWalletFactory;
 
     const address = await ContractUtils.getEventValueString(
-        await factoryContract.connect(deployer).create(name, description, owners, required),
+        await factoryContract.connect(deployer).create(name, description, owners, required, seed),
         factoryContract.interface,
         "ContractInstantiation",
         "wallet"
@@ -65,7 +66,8 @@ describe("Test for SubmitTransaction - filter factoryAddress, IMultiSigWalletFac
             "My Wallet 1",
             "My first multi-sign wallet",
             owners1.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(1)
         );
         assert.ok(multiSigWallet0);
 
@@ -86,7 +88,8 @@ describe("Test for SubmitTransaction - filter factoryAddress, IMultiSigWalletFac
             "My Wallet 1",
             "My first multi-sign wallet",
             owners1.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(2)
         );
         assert.ok(multiSigWallet1);
 

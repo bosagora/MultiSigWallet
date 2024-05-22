@@ -16,7 +16,8 @@ interface IMultiSigWalletFactory is IERC165 {
         string calldata _name,
         string calldata _description,
         address[] memory _owners,
-        uint256 _required
+        uint256 _required,
+        uint256 _seed
     ) external returns (address);
     function getNumberOfWalletsForCreator(address _creator) external view returns (uint256);
     function getWalletsForCreator(

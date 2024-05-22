@@ -23,13 +23,16 @@ async function deployMultiSigWallet(
     name: string,
     description: string,
     owners: string[],
-    required: number
+    required: number,
+    seed: BigNumber
 ): Promise<MultiSigWallet | undefined> {
     const contractFactory = await ethers.getContractFactory("MultiSigWalletFactory");
     const factoryContract = contractFactory.attach(factoryAddress) as MultiSigWalletFactory;
 
     const address = await ContractUtils.getEventValueString(
-        await factoryContract.connect(deployer).create(name, description, owners, required, { gasLimit: 4000000 }),
+        await factoryContract
+            .connect(deployer)
+            .create(name, description, owners, required, seed, { gasLimit: 4000000 }),
         factoryContract.interface,
         "ContractInstantiation",
         "wallet"
@@ -84,7 +87,8 @@ describe("Test for MultiSigWalletFactory", () => {
             walletInfos[0].name,
             walletInfos[0].description,
             owners1.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(1)
         );
         assert.ok(multiSigWallet1);
         assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(1));
@@ -97,7 +101,8 @@ describe("Test for MultiSigWalletFactory", () => {
             walletInfos[1].name,
             walletInfos[1].description,
             owners2.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(2)
         );
         assert.ok(multiSigWallet2);
         assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account3.address), BigNumber.from(1));
@@ -110,7 +115,8 @@ describe("Test for MultiSigWalletFactory", () => {
             walletInfos[2].name,
             walletInfos[2].description,
             owners3.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(3)
         );
         assert.ok(multiSigWallet3);
         assert.deepStrictEqual(await multiSigFactory.getNumberOfWalletsForMember(account0.address), BigNumber.from(2));
@@ -305,7 +311,8 @@ describe("Test for MultiSigWalletFactory 2", () => {
             walletInfos[0].name,
             walletInfos[0].description,
             members.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(10)
         );
         assert.ok(multiSigWallet1);
         assert.deepStrictEqual(
@@ -393,7 +400,8 @@ describe("Test for MultiSigWalletFactory 3", () => {
             walletInfos[0].name,
             walletInfos[0].description,
             members.map((m) => m.address),
-            requiredConfirmations
+            requiredConfirmations,
+            BigNumber.from(20)
         );
         assert.ok(multiSigWallet1);
         assert.deepStrictEqual(
