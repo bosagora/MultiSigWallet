@@ -1,6 +1,6 @@
 {
     "name": "multisig-wallet-contracts",
-    "version": "1.1.6",
+    "version": "2.0.0",
     "description": "Smart Contracts of MultiSignature Wallet",
     "files": [
         "**/*.sol"
@@ -37,7 +37,6 @@
         "@ethersproject/abi": "^5.7.0",
         "@nomiclabs/hardhat-ethers": "^2.2.3",
         "@nomiclabs/hardhat-waffle": "^2.0.2",
-        "@openzeppelin/contracts": "^4.9.5",
         "@typechain/ethers-v5": "^10.1.0",
         "@typechain/hardhat": "^6.1.2",
         "@types/chai": "^4.3.5",
@@ -48,10 +47,10 @@
         "chai-http": "^4.3.7",
         "dotenv": "^10.0.0",
         "ethereum-waffle": "^4.0.10",
-        "ethers": "npm:boa-ethers2@^5.7.9",
+        "ethers": "^5.7.0",
         "hardhat": "^2.12.7",
         "hardhat-gas-reporter": "^1.0.7",
-        "mocha": "10.1.0",
+        "mocha": "^10.1.0",
         "prettier": "^2.5.1",
         "prettier-plugin-solidity": "^1.1.1",
         "solhint": "^3.3.6",
@@ -62,5 +61,8 @@
         "tslint-config-prettier": "^1.18.0",
         "typechain": "^8.1.0",
         "typescript": "^4.5.5"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^4.9.5"
     }
 }
