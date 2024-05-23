@@ -211,24 +211,7 @@ contract MultiSigWallet is ERC165, IMultiSigWallet {
         uint256 _value,
         bytes calldata _data
     ) external override {
-        // Check if destination is MultiSigWalletFactory
         require(_destination != factoryAddress, "Invalid destination");
-
-        if (_data.length >= 4) {
-            // Get the first 4 bytes of _data
-            bytes4 selector;
-            assembly {
-                // Load the first 4 bytes of _data (the selector) into the selector variable
-                selector := calldataload(add(_data.offset, 0))
-            }
-
-            // Check if data is not calling addMember or removeMember function of MultiSigWalletFactory
-            require(
-                selector != IMultiSigWalletFactory.addMember.selector &&
-                    selector != IMultiSigWalletFactory.removeMember.selector,
-                "Invalid function call"
-            );
-        }
 
         uint256 transactionId = addTransaction(_title, _description, _destination, _value, _data);
         _confirmTransaction(transactionId);
