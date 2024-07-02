@@ -3,9 +3,18 @@
     "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
   },
   "bosagora_testnet": {
-    "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
+    "MultiSigWalletFactory": "0x41605865B6D06639a71F66466950116E2995d781"
   },
   "bosagora_devnet": {
+    "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
+  },
+  "acc_sidechain_mainnet": {
+    "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
+  },
+  "acc_sidechain_testnet": {
+    "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
+  },
+  "acc_sidechain_devnet": {
     "MultiSigWalletFactory": "0xF120890C71B2B9fF4578088A398a2402Ae0d3616"
   }
 }
