@@ -78,7 +78,7 @@ class Deployments {
         }
     }
 
-    static filename = "./deploy/main_chain_devnet/deployed_contracts.json";
+    static filename = "./deploy/main_chain_ethmainnet/deployed_contracts.json";
 
     public async loadContractInfo() {
         if (!fs.existsSync(Deployments.filename)) return;
@@ -111,7 +111,9 @@ async function deployMultiSigWalletFactory(accounts: IAccount, deployment: Deplo
     const contractName = "MultiSigWalletFactory";
     console.log(`Deploy ${contractName}...`);
     const factory = await ethers.getContractFactory("MultiSigWalletFactory");
-    const contract = (await factory.connect(accounts.deployer).deploy()) as MultiSigWalletFactory;
+    const contract = (await factory
+        .connect(accounts.deployer)
+        .deploy({ gasLimit: 8000000, gasPrice: ethers.utils.parseUnits("14", "gwei") })) as MultiSigWalletFactory;
     await contract.deployed();
     await contract.deployTransaction.wait();
 

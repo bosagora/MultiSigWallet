@@ -19,7 +19,7 @@ interface IAccount {
     deployer: Wallet;
 }
 
-type FnDeployer = (accounts: IAccount, deployment: Deployments) => void;
+type FnDeployer = (accounts: IAccount, deployment: Deployments) => Promise<any>;
 
 class Deployments {
     public deployments: Map<string, IDeployedContract>;

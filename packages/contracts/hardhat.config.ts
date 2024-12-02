@@ -74,13 +74,18 @@ const config = {
             gasPrice: 8000000000,
             blockGasLimit: 8000000,
         },
+        ethereum_mainnet: {
+            url: process.env.ETHNET_MAIN_NET_URL || "",
+            chainId: 1,
+            accounts: getAccounts(),
+        },
         bosagora_mainnet: {
-            url: process.env.MAIN_NET_URL || "",
+            url: process.env.BOANET_MAIN_NET_URL || "",
             chainId: 2151,
             accounts: getAccounts(),
         },
         bosagora_testnet: {
-            url: process.env.TEST_NET_URL || "",
+            url: process.env.BOANET_TEST_NET_URL || "",
             chainId: 2019,
             accounts: getAccounts(),
         },
